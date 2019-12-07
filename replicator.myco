@@ -1,0 +1,34 @@
+# config
+write-error-chance 100
+cosmic-ray-chance 10
+max 200
+
+# move the existing organism to a more visible location
+focus 0
+ip v 3
+ip > 1
+move > 2
+
+# create the replicator
+| cm a> mc -= ?v
+| !v #v #v #v !<
+| !> mc )) .. !v
+| .. .. .. .. !>
+move < 2
+move ^ 5
+# ax = 5, r = 2
+r #0
+r +a
+r aa
+r aa
+r +a
+r a>
+r r+
+r r+
+
+# put the cursor in the right place
+r #<
+r #v
+r #v
+
+pause

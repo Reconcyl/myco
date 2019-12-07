@@ -1,6 +1,6 @@
 # Myco: An Artificial Life Experiment
 
-![An image of a Myco execution][static/example.png]
+![An image of a Myco execution](static/example.png)
 
 Myco is an experiment in artificial life based on [fungeoid](http://esolangs.org/wiki/Fungeoid) organisms. To run, clone this repository and run `cargo run --release`.
 

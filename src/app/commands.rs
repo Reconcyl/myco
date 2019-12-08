@@ -194,12 +194,12 @@ define_command!(view(app, ()) {
     Ok(())
 });
 
-define_command!(move_ip(app, (dir, times) => (Dir, u16)) {
+define_command!(move_ip(app, (dir, times) => (Dir, Option<u16>)) {
     if let Some(id) = app.focus {
         let grid_width = app.grid.width();
         let grid_height = app.grid.height();
         let o = app.organisms.iter_mut().find(|o| o.id == id).unwrap();
-        for _ in 0..times {
+        for _ in 0..times.unwrap_or(1) {
             o.organism.ip = o.organism.ip.move_in(dir, grid_width, grid_height);
         }
     }

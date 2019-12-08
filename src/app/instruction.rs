@@ -146,7 +146,7 @@ gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
 
     RadiusA      "ra"  Selection
     RadiusB      "rb"  Selection
-    RadiusReset  "r1"  Selection
+    RadiusReset  "r0"  Selection
     RadiusToA    "ar"  Selection
     RadiusToB    "br"  Selection
     IncRadius    "r+"  Selection

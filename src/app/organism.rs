@@ -253,7 +253,7 @@ impl Organism {
 
             RadiusA => self.set_r(self.ax),
             RadiusB => self.set_r(self.bx),
-            RadiusReset => self.r = 1,
+            RadiusReset => self.r = 0,
             RadiusToA => self.ax = self.r,
             RadiusToB => self.bx = self.r,
             IncRadius => self.set_r(self.r + 1),

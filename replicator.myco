@@ -1,34 +1,29 @@
-# config
-write-error-chance 100
-cosmic-ray-chance 10
-max 200
+write-error-chance 1000
+set-auto-dedup 10
 
-# move the existing organism to a more visible location
+move v 6
+move > 5
+
+spawn
 focus 0
-ip v 3
-ip > 1
-move > 2
 
-# create the replicator
-| cm a> mc -= ?v
-| !v #v #v #v !<
-| !> mc )) .. !v
-| .. .. .. .. !>
-move < 2
-move ^ 5
-# ax = 5, r = 2
-r #0
-r +a
-r aa
-r aa
-r +a
-r a>
-r r+
-r r+
+run #0 r+ r+ r+
+run +a +a aa aa -a
+run a> #v #v #v
 
-# put the cursor in the right place
-r #<
-r #v
-r #v
+| .. .. ..
+move ^
+move > 4
+
+| !> cm a> bm (b !v !>
+| !v .. !< .. !v ?< ..
+| .. .. .. .. .. -= mc
+| .. .. .. @@ .. ?> !^
+| .. .. .. .. !> !> !v
+| .. .. mc .. .. .. a<
+| .. @@ ?^ )b bm av !<
+
+a< av bm (b ?v @@
+            !> mc !v
 
 pause

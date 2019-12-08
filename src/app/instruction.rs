@@ -1,4 +1,4 @@
-use termion::color;
+use super::ui::Color;
 
 #[derive(Clone, Copy)]
 pub enum Category {
@@ -11,14 +11,14 @@ pub enum Category {
 }
 
 impl Category {
-    pub fn fg_color_sequence(self) -> String {
+    pub fn color(self) -> Color {
         match self {
-            Self::Special     => format!("{}", color::Fg(color::AnsiValue::grayscale(4))),
-            Self::Calculation => format!("{}", color::Fg(color::LightGreen)),
-            Self::Control     => format!("{}", color::Fg(color::LightMagenta)),
-            Self::Cursor      => format!("{}", color::Fg(color::LightCyan)),
-            Self::Selection   => format!("{}", color::Fg(color::LightRed)),
-            Self::Memory      => format!("{}", color::Fg(color::LightBlue)),
+            Self::Special     => Color::Gray,
+            Self::Calculation => Color::LightGreen,
+            Self::Control     => Color::LightMagenta,
+            Self::Cursor      => Color::LightCyan,
+            Self::Selection   => Color::LightRed,
+            Self::Memory      => Color::LightBlue,
         }
     }
 }
@@ -27,8 +27,8 @@ macro_rules! gen_variant {
     (
         $enum_name:ident
         (
-            $array_name:ident,
-            $symbol_array_name:ident
+            const $array_name:ident,
+            const $symbol_array_name:ident
         )
         $($variant:ident $symbol:literal $category:ident)*
     ) => {
@@ -57,7 +57,11 @@ macro_rules! gen_variant {
     }
 }
 
-gen_variant! { Instruction (INSTRUCTIONS, INSTRUCTION_SYMBOLS)
+// Create the `Instruction` enum with methods that map each instruction
+// to its symbol or to its category.
+// Create a constant array of instructions in order and a static array
+// of instruction symbols which can be used to perform lookup.
+gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     Halt        "@@"  Special
     Nop         ".."  Special
     FlagFork    "-="  Special

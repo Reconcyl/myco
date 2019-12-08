@@ -6,9 +6,9 @@ Myco is an experiment in artificial life based on [fungeoid](http://esolangs.org
 
 The idea of Myco is that ants (which are internally referred to as organisms, though this phrasing is somewhat bad) move around on and modify a 2D grid of bytes, which are interpreted as instructions. Over 100 bytes are currently assigned instructions. Bytes with no instruction assigned to them are displayed as `..` and do nothing when executed. My hope is that random mutations and write errors will be able to create abiogenesis and evolution, though this has not yet been achieved. See the file `doc.txt` for more specifics on the behavior of ants.
 
-The Myco interface is mostly interacted with through commands. To begin typing a command, type `:`. Documentation for all commands has not currently been written; to best understand them, one should check the function `run_command()` in `app.rs`.
+The Myco interface is mostly interacted with through commands. To begin typing a command, type `:`. Documentation for all commands has not currently been written; to best understand them, one should check the file `commands.rs` in `src/app/`.
 
-Instead of being issued directly; Myco commands can also be stored in files. Upon starting, Myco will run the commands contained in file `init.myco`. In the future, this will be configurable.
+Instead of being issued directly; Myco commands can also be stored in files. Upon starting, if a filename is passed as an argument, Myco will run the commands contained in that file.
 
 The Myco RNG is configured by a deterministic 64-bit seed. Each execution will always act the same unless desynchronized by user commands (generally those that affect the number of ants).
 

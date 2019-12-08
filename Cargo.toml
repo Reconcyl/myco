@@ -9,4 +9,4 @@ edition = "2018"
 [dependencies]
 termion = "1.5.4"
 rand = "0.7.2"
-clap = "2.33.0"
+structopt = "0.3.5"

@@ -42,11 +42,6 @@ impl<R> Grid<R> {
             })
         })
     }
-    pub fn view_all<'a>(&'a self)
-        -> impl Iterator<Item=impl Iterator<Item=(Point, u8)> + 'a> + 'a
-    {
-        self.view(ORIGIN, self.width, self.height)
-    }
 }
 
 impl<'a, R: Rng> Grid<R> {

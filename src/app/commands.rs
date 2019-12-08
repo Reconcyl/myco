@@ -175,15 +175,14 @@ define_command!(set_auto_dedup(app, new) {
 });
 
 define_command!(focus(app, idx) {
-    if let Some(o) = app.organisms.get(idx) {
-        app.focus = Some(o.id);
-        app.ui.info1(format!("Set focus to organism {}.", idx));
+    if let Some(idx) = idx {
+        if let Some(o) = app.organisms.get(idx) {
+            app.focus = Some(o.id);
+            app.ui.info1(format!("Set focus to organism {}.", idx));
+        }
+    } else {
+        app.focus = None;
     }
-    Ok(())
-});
-
-define_command!(unfocus(app, ()) {
-    app.focus = None;
     Ok(())
 });
 

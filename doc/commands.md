@@ -80,13 +80,9 @@ Report the frequency of auto-deduplication (how many cycles between every dedup)
 
 Set auto-deduplication to run once every `RATE` cycles. If no argument is passed, disable auto-deduplication altogether.
 
-### `f ID`, `focus ID`
+### `f [ID]`, `focus [ID]`
 
-Set focus to the organism whose id is currently `ID`.
-
-### `uf`, `unfocus`
-
-Remove focus from any organism.
+Set focus to the organism whose id is currently `ID`. If no argument is passed, remove focus from any organism.
 
 ### `view`
 

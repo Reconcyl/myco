@@ -95,8 +95,7 @@ impl<R: Read, W: Write> Commands<R, W> {
         result.register("dedup", commands::dedup());
         result.register("auto-dedup", commands::auto_dedup());
         result.register("set-auto-dedup", commands::set_auto_dedup());
-        result.register_aliases(&["f", "focus"],    commands::focus());
-        result.register_aliases(&["uf", "unfocus"], commands::unfocus());
+        result.register_aliases(&["f", "focus"], commands::focus());
         result.register("view", commands::view());
         result.register("ip", commands::move_ip());
         result.register_aliases(&["r", "run"], commands::run());

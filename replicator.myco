@@ -1,20 +1,18 @@
+# config
 write-error-chance 1000
 set-auto-dedup 10
+speed 20
 
+# create an organism in a visible location
 move v 6
 move > 5
-
 spawn
 focus 0
 
-run #0 r+ r+ r+
-run +a +a aa aa -a
-run a> #v #v #v
+# center selection on replicator body and set r = 3, ax = 7
+run #0 #> #> #> #v #v #v r+ r+ r+ +a +a aa aa -a
 
-| .. .. ..
-move ^
-move > 4
-
+# write the pattern
 | !> cm a> bm (b !v !>
 | !v .. !< .. !v ?< ..
 | .. .. .. .. .. -= mc
@@ -22,8 +20,5 @@ move > 4
 | .. .. .. .. !> !> !v
 | .. .. mc .. .. .. a<
 | .. @@ ?^ )b bm av !<
-
-a< av bm (b ?v @@
-            !> mc !v
 
 pause

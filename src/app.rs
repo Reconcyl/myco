@@ -93,7 +93,7 @@ impl<R: Read, W: Write> Commands<R, W> {
         result.register_aliases(&["c", "cycle"], commands::cycle());
         result.register_aliases(&["p", "pause"], commands::pause());
         result.register("move", commands::move_());
-        result.register("write", commands::write());
+        result.register_aliases(&["w", "write"], commands::write());
         result.register("|", commands::insert_line());
         result.register("byte", commands::byte());
         result.register("spawn", commands::spawn());

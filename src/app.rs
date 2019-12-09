@@ -6,9 +6,7 @@ use termion::input::TermRead;
 
 use std::collections::{HashMap, VecDeque, HashSet};
 use std::io::{Read, Write};
-use std::path::Path;
 use std::rc::Rc;
-use std::time::Duration;
 
 /// The instruction enum.
 mod instruction;
@@ -29,6 +27,22 @@ use grid::{Grid, Point, ORIGIN, Dir};
 use organism::{Organism, Response};
 use command::{CommandHandler, Args};
 use ui::UI;
+
+/// General-purpose app error enum.
+#[derive(Clone, Copy)]
+pub enum Error {
+    BadWidth,
+    BadHeight,
+}
+
+impl Error {
+    pub fn description(self) -> std::borrow::Cow<'static, str> {
+        match self {
+            Error::BadWidth => "Width cannot be 0.".into(),
+            Error::BadHeight => "Height cannot be 0.".into(),
+        }
+    }
+}
 
 type OrganismId = u64;
 
@@ -290,7 +304,13 @@ impl<R: Read, W: Write> AppState<R, W> {
 impl<R: Read, W: Write> AppState<R, W> {
     /// Initialize the AppState by creating the grid and executing commands
     /// from the initialization file.
-    pub(super) fn init(options: Options, stdin: R, stdout: W) -> Self {
+    pub(super) fn init(options: Options, stdin: R, stdout: W) -> Result<Self, Error> {
+        if options.grid_width == 0 {
+            return Err(Error::BadWidth);
+        }
+        if options.grid_height == 0 {
+            return Err(Error::BadHeight);
+        }
         // Initialize the RNGs.
         let rng_seed = options.rng_seed.unwrap_or_else(rand::random);
         let mut id_rng     = StdRng::seed_from_u64(rng_seed);
@@ -317,9 +337,9 @@ impl<R: Read, W: Write> AppState<R, W> {
         if let Some(f) = options.initial_file {
             app.run_commands_in_file(&f);
         }
-        app
+        Ok(app)
     }
-    fn run_commands_in_file(&mut self, path: impl AsRef<Path>) {
+    fn run_commands_in_file(&mut self, path: impl AsRef<std::path::Path>) {
         if let Ok(contents) = std::fs::read_to_string(&path) {
             for command in contents.lines() {
                 self.run_command(command);
@@ -393,6 +413,7 @@ impl<R: Read, W: Write> AppState<R, W> {
             else { "Unpaused." });
     }
     pub fn run(&mut self) {
+        use std::time::Duration;
         let frame_frequency_ms = 16u64;
         let frame_frequency = Duration::from_millis(frame_frequency_ms);
         let mut time_since_last_cycle = 0;

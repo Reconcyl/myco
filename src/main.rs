@@ -27,12 +27,16 @@ struct Options {
 
 fn main() {
     let options = Options::from_args();
+
     let stdout = io::stdout();
     let stdout = stdout.into_raw_mode().unwrap();
     let stdout = termion::screen::AlternateScreen::from(stdout);
-    let stdout = cursor::HideCursor::from(stdout);
 
+    let stdout = cursor::HideCursor::from(stdout);
     let stdin = termion::async_stdin();
-    let mut app = app::AppState::init(options, stdin, stdout);
-    app.run();
+    
+    match app::AppState::init(options, stdin, stdout) {
+        Ok(mut app) => app.run(),
+        Err(e) => eprintln!("{}", e.description()),
+    }
 }

@@ -38,6 +38,10 @@ Run the commands given by the lines of `FILE`. Blank commands and commands start
 
 Set the chance of a write error to 1 in `CHANCE`. If `CHANCE` is zero, then remove the possibility of write errors altogether. If no argument is passed, report the current chance of a write error.
 
+### `cosmic-ray-rate [RATE]`
+
+Set the frequency of cosmic rays to be `RATE` times per cycle. If no argument is passed, report the current frequency.
+
 ### `c [TIMES]`, `cycle [TIMES]`
 
 Run `TIMES` cycles without displaying them. If no argument is passed, run a single cycle (equivalent to pressing space when paused).
@@ -72,13 +76,9 @@ Go through the list of organisms and remove any identical ones (i.e. those in th
 
 This also has the effect of unfocusing the focused organism (though this may change in the future).
 
-### `auto-dedup`
+### `auto-dedup [RATE]`
 
-Report the frequency of auto-deduplication (how many cycles between every dedup).
-
-### `set-auto-dedup [RATE]`
-
-Set auto-deduplication to run once every `RATE` cycles. If no argument is passed, disable auto-deduplication altogether.
+Set auto-deduplication to run once every `RATE` cycles. If `RATE` is zero, disable auto-deduplication altogether. If no argument is passed, report the current rate of auto-deduplication.
 
 ### `f [ID]`, `focus [ID]`
 

@@ -19,6 +19,7 @@ pub enum Error {
     NoNumber,
     BadNumber,
     ZeroSpeed,
+    ZeroDedupRate,
     NoPath,
     Extra(String),
 }
@@ -33,6 +34,7 @@ impl Error {
             Error::NoNumber  => "Expected number.".into(),
             Error::BadNumber => "Invalid number.".into(),
             Error::ZeroSpeed => "Speed cannot be set to 0.".into(),
+            Error::ZeroDedupRate => "Dedup rate cannot be set to 0.".into(),
             Error::NoPath => "Expected filepath.".into(),
             Error::Extra(s) => format!("Unexpected argument '{}'.", s).into(),
         }

@@ -46,10 +46,13 @@ struct Config {
     rng_seed: u64,
     /// How many milliseconds to wait between cycles.
     cycle_frequency: u32,
+    /// The number of cosmic rays per cycle.
+    cosmic_ray_rate: u32,
     /// The maximum number of organisms, if any before reproduction doesn't work.
     max_organisms: Option<usize>,
-    /// How many cycles to wait between dedup passes.
-    dedup_rate: Option<usize>,
+    /// How many cycles to wait between dedup passes. If zero, then never
+    /// perform dedup passes.
+    dedup_rate: usize,
 }
 
 impl Config {
@@ -57,8 +60,9 @@ impl Config {
         Self {
             rng_seed,
             cycle_frequency: 100,
+            cosmic_ray_rate: 0,
             max_organisms: None,
-            dedup_rate: None,
+            dedup_rate: 0,
         }
     }   
 }
@@ -85,6 +89,7 @@ impl<R: Read, W: Write> Commands<R, W> {
         result.register("seed", commands::seed());
         result.register("source", commands::source());
         result.register("write-error-chance", commands::write_error_chance());
+        result.register("cosmic-ray-rate", commands::cosmic_ray_rate());
         result.register_aliases(&["c", "cycle"], commands::cycle());
         result.register_aliases(&["p", "pause"], commands::pause());
         result.register("move", commands::move_());
@@ -94,7 +99,6 @@ impl<R: Read, W: Write> Commands<R, W> {
         result.register("spawn", commands::spawn());
         result.register("dedup", commands::dedup());
         result.register("auto-dedup", commands::auto_dedup());
-        result.register("set-auto-dedup", commands::set_auto_dedup());
         result.register_aliases(&["f", "focus"], commands::focus());
         result.register("view", commands::view());
         result.register("ip", commands::move_ip());
@@ -117,8 +121,10 @@ pub struct AppState<R, W> {
     total_cycles: usize,
     /// How many cycles have passed since a dedup occurred.
     cycles_since_dedup: usize,
-    /// The RNG.
-    rng: StdRng,
+    /// The RNG used to generate unique organism IDs.
+    id_rng: StdRng,
+    /// The RNG used to generate cosmic rays.
+    cosmic_ray_rng: StdRng,
     /// Iterator of keys from STDIN.
     key_input: termion::input::Keys<R>,
     /// The set of organisms.
@@ -144,7 +150,7 @@ impl<R: Read, W: Write> AppState<R, W> {
     /// Create a new state wrapper with a random ID for an organism.
     fn make_organism_state(&mut self, o: Organism) -> OrganismState {
         OrganismState {
-            id: self.rng.gen(),
+            id: self.id_rng.gen(),
             delay_cycles: 0,
             organism: o,
         }
@@ -181,12 +187,6 @@ impl<R: Read, W: Write> AppState<R, W> {
             self.organisms.iter()
                 .find(|o| o.id == focus).unwrap())
     }
-    /// Return the state of the focused organism mutably.
-    fn get_focused_mut(&mut self) -> Option<&mut OrganismState> {
-        self.focus.map(move |focus|
-            self.organisms.iter_mut()
-                .find(|o| o.id == focus).unwrap())
-    }
     /// Turn a point relative to the view into a point relative to the grid.
     fn absolute(&self, p: Point) -> Point {
         let offset = self.ui.view_offset;
@@ -211,6 +211,15 @@ impl<R: Read, W: Write> AppState<R, W> {
             }
         }
         self.organisms = new_organisms;
+    }
+    /// Repeatedly make random modifications to the grid.
+    fn cosmic_rays(&mut self) {
+        for _ in 0..self.config.cosmic_ray_rate {
+            let x = self.cosmic_ray_rng.gen_range(0, self.grid.width());
+            let y = self.cosmic_ray_rng.gen_range(0, self.grid.height());
+            let val = self.cosmic_ray_rng.gen();
+            self.grid.set(Point { x, y }, val);
+        }
     }
 }
 
@@ -267,13 +276,13 @@ impl<R: Read, W: Write> AppState<R, W> {
         for _ in 0..self.organisms.len() {
             self.cycle_organism();
         }
+        self.cosmic_rays();
         self.total_cycles += 1;
         self.cycles_since_dedup += 1;
-        if let Some(rate) = self.config.dedup_rate {
-            if self.cycles_since_dedup >= rate {
-                self.cycles_since_dedup = 0;
-                self.dedup_organisms();
-            }
+        let rate = self.config.dedup_rate;
+        if rate != 0 && self.cycles_since_dedup >= rate {
+            self.cycles_since_dedup = 0;
+            self.dedup_organisms();
         }
     }
 }
@@ -284,16 +293,18 @@ impl<R: Read, W: Write> AppState<R, W> {
     pub(super) fn init(options: Options, stdin: R, stdout: W) -> Self {
         // Initialize the RNGs.
         let rng_seed = options.rng_seed.unwrap_or_else(rand::random);
-        let mut rng = StdRng::seed_from_u64(rng_seed);
-        let grid_rng = StdRng::seed_from_u64(rng.gen());
+        let mut id_rng     = StdRng::seed_from_u64(rng_seed);
+        let grid_rng       = StdRng::seed_from_u64(id_rng.gen());
+        let cosmic_ray_rng = StdRng::seed_from_u64(id_rng.gen());
         // Create the app.
         let mut app = Self {
             total_cycles: 0,
             cycles_since_dedup: 0,
-            rng,
+            id_rng,
+            cosmic_ray_rng,
             key_input: stdin.keys(),
             organisms: VecDeque::new(),
-            grid: Grid::init(500, 500, grid_rng, 0),
+            grid: Grid::init(options.grid_width, options.grid_height, grid_rng, 0),
             config: Config::new(rng_seed),
             commands: Commands::new(),
             ui: UI::new(stdout),

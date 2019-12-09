@@ -85,11 +85,21 @@ define_command!(write_error_chance(app, new_chance) {
         }
     } else {
         let chance = app.grid.write_error_chance;
-        if app.grid.write_error_chance == 0 {
+        if chance == 0 {
             app.ui.info1("The current write error chance is 0.");
         } else {
             app.ui.info1(format!("The current write error chance is 1/{}.", chance))
         };
+    }
+    Ok(())
+});
+
+define_command!(cosmic_ray_rate(app, new) {
+    if let Some(rate) = new {
+        app.config.cosmic_ray_rate = rate;
+        app.ui.info1(format!("Set cosmic rays to occur {} times per cycle.", rate));
+    } else {
+        app.ui.info1(format!("Cosmic rays occur {} times per cycle.", app.config.cosmic_ray_rate));
     }
     Ok(())
 });
@@ -155,21 +165,21 @@ define_command!(dedup(app, ()) {
     Ok(())
 });
 
-define_command!(auto_dedup(app, ()) {
-    if let Some(rate) = app.config.dedup_rate {
-        app.ui.info1(format!("Deduplication automatically runs every {} cycles.", rate));
+define_command!(auto_dedup(app, new) {
+    if let Some(rate) = new {
+        app.config.dedup_rate = rate;
+        if rate == 0 {
+            app.ui.info1("Disabled automatic deduplication.");
+        } else {
+            app.ui.info1(format!("Enabled automatic deduplication every {} cycles.", rate));
+        }
     } else {
-        app.ui.info1("Automatic deduplication is disabled.");
-    }
-    Ok(())
-});
-
-define_command!(set_auto_dedup(app, new) {
-    app.config.dedup_rate = new;
-    if let Some(new) = new {
-        app.ui.info1(format!("Set deduplication to run every {} cycles.", new));
-    } else {
-        app.ui.info1("Disabled automatic deduplication.");
+        let rate = app.config.dedup_rate;
+        if rate == 0 {
+            app.ui.info1("Automatic deduplication is disabled.");
+        } else {
+            app.ui.info1(format!("Automatic deduplication runs every {} cycles.", rate));
+        }
     }
     Ok(())
 });

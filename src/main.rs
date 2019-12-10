@@ -31,8 +31,8 @@ fn main() {
     let stdout = io::stdout();
     let stdout = stdout.into_raw_mode().unwrap();
     let stdout = termion::screen::AlternateScreen::from(stdout);
-
     let stdout = cursor::HideCursor::from(stdout);
+    
     let stdin = termion::async_stdin();
     
     match app::AppState::init(options, stdin, stdout) {

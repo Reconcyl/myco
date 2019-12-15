@@ -2,12 +2,12 @@
 //! 
 
 use std::borrow::Cow;
-use std::io::{Read, Write};
+use std::io::{Write};
 use std::marker::PhantomData;
 use std::path::PathBuf;
 
+use crate::grid::Dir;
 use super::AppState;
-use super::grid::Dir;
 use super::instruction::Instruction;
 
 /// Generic error enum for invalid arguments.
@@ -159,8 +159,8 @@ impl<T: ParseArgs> ParseArgs for Vec<T> {
 }
 
 /// A trait representing command handlers that take an argument.
-pub(super) trait CommandHandler<R: Read, W: Write> {
-    fn run(&self, app: &mut AppState<R, W>, args: Args) -> Result<(), Error>;
+pub(super) trait CommandHandler<W: Write> {
+    fn run(&self, app: &mut AppState<W>, args: Args) -> Result<(), Error>;
 }
 
 /// A struct that implements `CommandHandler` by forwarding to another function.
@@ -175,10 +175,10 @@ impl<A, F> ClosureHandler<A, F> {
     }
 }
 
-impl<A, R, W, F> CommandHandler<R, W> for ClosureHandler<A, F>
-    where A: ParseArgs, R: Read, W: Write, F: Fn(&mut AppState<R, W>, A) -> Result<(), Error>
+impl<A, W, F> CommandHandler<W> for ClosureHandler<A, F>
+    where A: ParseArgs, W: Write, F: Fn(&mut AppState<W>, A) -> Result<(), Error>
 {
-    fn run(&self, app: &mut AppState<R, W>, mut args: Args) -> Result<(), Error> {
+    fn run(&self, app: &mut AppState<W>, mut args: Args) -> Result<(), Error> {
         let arg = args.next()?;
         args.ensure_final()?;
         (self.f)(app, arg)

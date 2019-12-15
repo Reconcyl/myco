@@ -3,10 +3,14 @@ use rand::Rng;
 use std::io::{Read, Write};
 use std::collections::HashSet;
 
-use super::{Organism, OrganismState, OrganismId, OrganismQueue};
-use super::grid::{Grid, Dir, Point, ORIGIN};
+use crate::grid::{Grid, Dir, Point, ORIGIN};
+use super::organism::{
+    OrganismCollection,
+    OrganismState,
+    OrganismId,
+    get_points_for_selection
+};
 use super::instruction::Instruction;
-use super::organism::get_points_for_selection;
 
 /// Enum representing different colors.
 #[derive(Clone, Copy)]
@@ -62,7 +66,7 @@ impl Color {
 /// General information relevant to the UI but not the simulation.
 pub(super) struct UI<W> {
     /// Handle to raw mode STDOUT.
-    stdout: W,
+    stdout: Option<W>,
     /// The position of the point currently selected.
     selection: Option<Point>,
     /// The width of the viewing window, separate from the grid itself.
@@ -80,6 +84,9 @@ pub(super) struct UI<W> {
     info_box_scroll_offset: usize,
     /// The number of lines currently taken up by the status box on the right.
     status_box_height: u16,
+    /// IDs of organisms in the order they were displayed last time they were
+    /// listed.
+    list_order: Vec<OrganismId>,
 }
 
 /// Convenience macro to write to STDOUT.
@@ -88,7 +95,9 @@ macro_rules! print {
         print!($self, "{}", $s);
     };
     ($self:expr, $fmt:literal $(, $args:expr)*) => {
-        write!($self.stdout, $fmt $(, $args)*).unwrap();
+        if let Some(s) = &mut $self.stdout {
+            write!(s, $fmt $(, $args)*).unwrap();
+        }
     };
 }
 
@@ -156,7 +165,7 @@ impl<W> UI<W> {
 
 // Public methods related to UI rendering.
 impl<W: Write> UI<W> {
-    pub fn new(stdout: W) -> Self {
+    pub fn new(stdout: Option<W>) -> Self {
         // TODO: compute view_width, view_height, and info_box_view_height
         // based on the data termion provides about the width and height
         // of the terminal.
@@ -170,13 +179,16 @@ impl<W: Write> UI<W> {
             info_box_view_height: 10,
             info_box_scroll_offset: 0,
             status_box_height: 0,
+            list_order: Vec::new(),
         };
         ui.clear();
         ui
     }
     /// Flush STDOUT.
     pub fn flush(&mut self) {
-        self.stdout.flush().unwrap();
+        if let Some(s) = &mut self.stdout {
+            s.flush().unwrap();
+        }
     }
     /// Clear the screen.
     pub fn clear(&mut self) {
@@ -191,10 +203,6 @@ impl<W: Write> UI<W> {
     /// Replace the existing info message with a single-line one.
     pub fn info1<S: Into<String>>(&mut self, info: S) {
         self.info(vec![info.into()]);
-    }
-    /// Display an alert about there being no living organisms.
-    pub fn alert_no_organisms(&mut self) {
-        self.info1("There are no living organisms.");
     }
     /// Scroll the info box upwards one line and redraw.
     pub fn info_scroll_up(&mut self) {
@@ -211,22 +219,30 @@ impl<W: Write> UI<W> {
         self.render_info_box();
     }
     /// Display a color-coded list of living organisms in the info box.
-    pub fn list_organisms(&mut self, organisms: &OrganismQueue, focus: Option<OrganismId>) {
-        if organisms.is_empty() {
-            self.alert_no_organisms();
-        } else {
-            let mut lines = vec![String::from("Organisms:")];
-            for (i, o) in organisms.iter().enumerate() {
-                let color = if Some(o.id) == focus { Color::Yellow } else { Color::Blue };
-                lines.push(format!("{color}{i}: {o}{reset}",
-                    color = color.fg(),
-                    i = i,
-                    o = o.organism,
-                    reset = Color::Reset.fg()
-                ));
-            }
-            self.info(lines);   
+    pub fn list_organisms(&mut self, organisms: &OrganismCollection, focus: Option<OrganismId>) {
+        let mut lines = vec![String::from("Organisms:")];
+        let mut list_order = Vec::new();
+        for (i, state) in organisms.iter().enumerate() {
+            let id = state.id();
+            list_order.push(id);
+            let color = if Some(id) == focus { Color::Yellow } else { Color::Blue };
+            lines.push(format!("{color}{i}: {o}{reset}",
+                color = color.fg(),
+                i = i,
+                o = state.organism,
+                reset = Color::Reset.fg()
+            ));
         }
+        if lines.len() == 1 {
+            self.info1("There are no living organisms.");
+        } else {
+            self.info(lines);
+        }
+        self.list_order = list_order;
+    }
+    /// Set the focus based to an ID given by an index into `list_order`
+    pub fn get_listed_id(&mut self, index: usize) -> Option<OrganismId> {
+        self.list_order.get(index).copied()
     }
     /// Replace the previous selection with a new selection and redraw it.
     pub fn select(&mut self, new_selection: Option<Point>) {
@@ -258,7 +274,7 @@ impl<W: Write> UI<W> {
         total_cycles: usize,
         num_organisms: usize,
         selected_byte: Option<u8>,
-        focused_organism: Option<&Organism>,
+        focused_organism: Option<&OrganismState>,
     ) {
         let term_x = self.view_width as u16 * 3 + 3;
         let term_y = 2;
@@ -275,7 +291,7 @@ impl<W: Write> UI<W> {
             };
             ($fmt:literal$(, $fmt_arg:expr)*) => {
                 self.go_to(term_x + 1, term_y + status_lines);
-                write!(self.stdout, $fmt $(, $fmt_arg)*).unwrap();
+                print!(self, $fmt $(, $fmt_arg)*);
                 status_lines += 1;
             }
         }
@@ -285,7 +301,7 @@ impl<W: Write> UI<W> {
             write_line!("byte   {:3}", byte);
         }
         if let Some(o) = focused_organism {
-            let Organism { dir, ax, bx, flag, .. } = o;
+            let OrganismState { dir, ax, bx, flag, .. } = o;
             let (first_row, column, bytes) = o.local_memory();
             write_line!("dir      {}", dir.to_char());
             write_line!("ax     {:3}", ax);
@@ -327,11 +343,11 @@ impl<W: Write> UI<W> {
         // Determine the position of the focused organism and the points in
         // the square that it is selecting.
         let (focused_pos, selected) = match focused {
-            Some(o) => (
-                Some(o.organism.ip),
+            Some(state) => (
+                Some(state.ip),
                 get_points_for_selection(
-                    o.organism.cursor,
-                    o.organism.r,
+                    state.cursor,
+                    state.r,
                     grid
                 ).collect()
             ),
@@ -396,7 +412,7 @@ impl<W: Write> UI<W> {
                     }
                     Key::Char(c) => {
                         command.push(c);
-                        write!(self.stdout, "{}", c).unwrap();
+                        print!(self, c);
                         self.flush();
                     }
                     Key::Backspace => if command.pop().is_some() {

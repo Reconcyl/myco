@@ -2,17 +2,14 @@ use rand::{SeedableRng as _, Rng as _};
 use rand::rngs::StdRng;
 
 use termion::event::Key;
-use termion::input::TermRead;
 
-use std::collections::{HashMap, VecDeque, HashSet};
+use std::collections::HashMap;
 use std::io::{Read, Write};
 use std::rc::Rc;
 
 /// The instruction enum.
 mod instruction;
-/// Grid and geometric utilities (directions, points, etc.).
-mod grid;
-/// The actual organism logic (implementing instructions).
+/// The data structure storing organisms.
 mod organism;
 /// Parsing logic related to commands.
 mod command;
@@ -22,9 +19,9 @@ mod commands;
 mod ui;
 
 use super::Options;
+use crate::grid::{Grid, Point, ORIGIN, Dir};
 use instruction::Instruction;
-use grid::{Grid, Point, ORIGIN, Dir};
-use organism::{Organism, Response};
+use organism::{OrganismCollection, OrganismState, OrganismId};
 use command::{CommandHandler, Args};
 use ui::UI;
 
@@ -43,16 +40,6 @@ impl Error {
         }
     }
 }
-
-type OrganismId = u64;
-
-struct OrganismState {
-    id: u64,
-    delay_cycles: u8,
-    organism: Organism,
-}
-
-type OrganismQueue = VecDeque<OrganismState>;
 
 /// Rarely- or never- modified configuration information for the app.
 struct Config {
@@ -81,15 +68,15 @@ impl Config {
     }   
 }
 
-struct Commands<R, W> {
+struct Commands<W> {
     /// The last valid command executed. This is used by the '.' key to
     /// re-execute commands.
     last: Option<String>,
     /// Handlers for various commands.
-    handlers: HashMap<String, Rc<dyn CommandHandler<R, W>>>,
+    handlers: HashMap<String, Rc<dyn CommandHandler<W>>>,
 }
 
-impl<R: Read, W: Write> Commands<R, W> {
+impl<W: Write> Commands<W> {
     fn new() -> Self {
         let mut result = Self {
             last: None,
@@ -120,35 +107,31 @@ impl<R: Read, W: Write> Commands<R, W> {
         result.register("kill", commands::kill());
         result
     }
-    fn register(&mut self, name: &str, handler: Rc<dyn CommandHandler<R, W>>) {
+    fn register(&mut self, name: &str, handler: Rc<dyn CommandHandler<W>>) {
         self.handlers.insert(String::from(name), handler);
     }
-    fn register_aliases(&mut self, names: &[&str], handler: Rc<dyn CommandHandler<R, W>>) {
+    fn register_aliases(&mut self, names: &[&str], handler: Rc<dyn CommandHandler<W>>) {
         for name in names {
             self.register(name, Rc::clone(&handler));
         }
     }
 }
 
-pub struct AppState<R, W> {
+pub struct AppState<W> {
     /// The total number of cycles that have passed.
     total_cycles: usize,
     /// How many cycles have passed since a dedup occurred.
     cycles_since_dedup: usize,
-    /// The RNG used to generate unique organism IDs.
-    id_rng: StdRng,
     /// The RNG used to generate cosmic rays.
     cosmic_ray_rng: StdRng,
-    /// Iterator of keys from STDIN.
-    key_input: termion::input::Keys<R>,
-    /// The set of organisms.
-    organisms: OrganismQueue,
+    /// The collection of organisms.
+    organisms: OrganismCollection,
     /// The instruction grid.
     grid: Grid<StdRng>,
     /// Configuration information.
     config: Config,
     /// Command-line parsing information.
-    commands: Commands<R, W>,
+    commands: Commands<W>,
     /// UI information.
     ui: UI<W>,
     /// The ID of the organism, if any, that is currently being focused.
@@ -160,46 +143,11 @@ pub struct AppState<R, W> {
 }
 
 // Utility methods.
-impl<R: Read, W: Write> AppState<R, W> {
-    /// Create a new state wrapper with a random ID for an organism.
-    fn make_organism_state(&mut self, o: Organism) -> OrganismState {
-        OrganismState {
-            id: self.id_rng.gen(),
-            delay_cycles: 0,
-            organism: o,
-        }
-    }
-    /// Add an organism to the list, assigning it a random ID.
-    fn add_organism(&mut self, o: Organism) {
-        let o_state = self.make_organism_state(o);
-        self.organisms.push_back(o_state);
-    }
+impl<W: Write> AppState<W> {
     /// Create an organism and add it to the list.
     fn spawn_organism(&mut self) {
         let pos = self.absolute(self.ui.selection().unwrap_or(ORIGIN));
-        self.add_organism(Organism::init(pos));
-    }
-    /// Return the state of the focused organism, if any, as well as a set
-    /// of points of all organisms.
-    fn get_focused_and_all_locations(
-        focus: Option<OrganismId>,
-        organisms: &OrganismQueue
-    ) -> (Option<&OrganismState>, HashSet<Point>) {
-        let mut focused = None;
-        let mut locations = HashSet::new();
-        for o in organisms {
-            if Some(o.id) == focus {
-                focused = Some(o);
-            }
-            locations.insert(o.organism.ip);
-        }
-        (focused, locations)
-    }
-    /// Return the state of the focused organism, if any.
-    fn get_focused(&self) -> Option<&OrganismState> {
-        self.focus.map(|focus|
-            self.organisms.iter()
-                .find(|o| o.id == focus).unwrap())
+        self.organisms.insert(OrganismState::init(pos));
     }
     /// Turn a point relative to the view into a point relative to the grid.
     fn absolute(&self, p: Point) -> Point {
@@ -213,19 +161,6 @@ impl<R: Read, W: Write> AppState<R, W> {
         self.ui.selection()
             .map(|p| self.grid[self.absolute(p)])
     }
-    /// Remove organisms that are exact duplicates.
-    /// For simplicity, we also remove the focus.
-    fn dedup_organisms(&mut self) {
-        self.focus = None;
-        let mut organisms = HashSet::<(u8, Organism)>::new();
-        let mut new_organisms = VecDeque::new();
-        for o in self.organisms.drain(..) {
-            if organisms.insert((o.delay_cycles, o.organism.clone())) {
-                new_organisms.push_back(o);
-            }
-        }
-        self.organisms = new_organisms;
-    }
     /// Repeatedly make random modifications to the grid.
     fn cosmic_rays(&mut self) {
         for _ in 0..self.config.cosmic_ray_rate {
@@ -238,73 +173,31 @@ impl<R: Read, W: Write> AppState<R, W> {
 }
 
 // The main simulation loop.
-impl<R: Read, W: Write> AppState<R, W> {
-    /// Advance the old organism and add the new one (as long as we stay under
-    /// the maximum).
-    fn fork(&mut self, mut old: OrganismState, mut new: Organism) {
-        // The resulting number of organisms, counting `old` and `new`.
-        let new_organism_len = self.organisms.len() + 2;
-        // Would this number be too many?
-        let valid = match self.config.max_organisms {
-            Some(max) => new_organism_len <= max,
-            None => true,
-        };
-        old.organism.advance(&self.grid);
-        self.organisms.push_back(old);
-        if valid {
-            new.advance(&self.grid);
-            self.add_organism(new);
-        }
-    }
-    /// Perform a cycle for a single organism. Panic if there are no organisms.
-    fn cycle_organism(&mut self) {
-        let mut state = self.organisms.pop_front().unwrap();
-        if state.delay_cycles > 0 {
-            // If the organism is still being delayed, do nothing.
-            state.delay_cycles -= 1;
-            self.organisms.push_back(state);
-        } else {
-            // Otherwise, read and execute an instruction.
-            let instruction = self.grid[state.organism.ip];
-            let instruction = Instruction::from_byte(instruction);
-            match state.organism.run(&mut self.grid, instruction) {
-                Response::Delay(delay) => {
-                    state.delay_cycles = delay;
-                    state.organism.advance(&self.grid);
-                    self.organisms.push_back(state);
-                }
-                Response::Fork(new) => self.fork(state, new),
-                Response::Die => {
-                    if Some(state.id) == self.focus {
-                        self.focus = None;
-                    }
-                    if self.organisms.is_empty() {
-                        self.ui.alert_no_organisms();
-                    }
-                }
-            }
-        }
-    }
+impl<W: Write> AppState<W> {
     /// Perform a cycle for all organisms.
     fn cycle(&mut self) {
-        for _ in 0..self.organisms.len() {
-            self.cycle_organism();
-        }
+        self.organisms.run_cycle(&mut self.grid, self.config.max_organisms);
         self.cosmic_rays();
+        // If the focused organism is no longer alive, set it to `None`.
+        if let Some(id) = self.focus {
+            if self.organisms.alive(id) {
+                self.focus = None;
+            }
+        }
         self.total_cycles += 1;
         self.cycles_since_dedup += 1;
         let rate = self.config.dedup_rate;
         if rate != 0 && self.cycles_since_dedup >= rate {
             self.cycles_since_dedup = 0;
-            self.dedup_organisms();
+            self.organisms.dedup();
         }
     }
 }
 
-impl<R: Read, W: Write> AppState<R, W> {
+impl<W: Write> AppState<W> {
     /// Initialize the AppState by creating the grid and executing commands
     /// from the initialization file.
-    pub(super) fn init(options: Options, stdin: R, stdout: W) -> Result<Self, Error> {
+    pub(super) fn init(options: Options, stdout: Option<W>) -> Result<Self, Error> {
         if options.grid_width == 0 {
             return Err(Error::BadWidth);
         }
@@ -313,18 +206,22 @@ impl<R: Read, W: Write> AppState<R, W> {
         }
         // Initialize the RNGs.
         let rng_seed = options.rng_seed.unwrap_or_else(rand::random);
-        let mut id_rng     = StdRng::seed_from_u64(rng_seed);
-        let grid_rng       = StdRng::seed_from_u64(id_rng.gen());
-        let cosmic_ray_rng = StdRng::seed_from_u64(id_rng.gen());
+        let mut rng  = StdRng::seed_from_u64(rng_seed);
+        let grid_rng = StdRng::seed_from_u64(rng.gen());
+        let kill_rng = StdRng::seed_from_u64(rng.gen());
         // Create the app.
         let mut app = Self {
             total_cycles: 0,
             cycles_since_dedup: 0,
-            id_rng,
-            cosmic_ray_rng,
-            key_input: stdin.keys(),
-            organisms: VecDeque::new(),
-            grid: Grid::init(options.grid_width, options.grid_height, grid_rng, 0),
+            cosmic_ray_rng: rng,
+            organisms: OrganismCollection::new(kill_rng),
+            grid: Grid::init(
+                options.grid_width,
+                options.grid_height,
+                grid_rng,
+                Instruction::Nop as u8,
+                1
+            ),
             config: Config::new(rng_seed),
             commands: Commands::new(),
             ui: UI::new(stdout),
@@ -370,11 +267,11 @@ impl<R: Read, W: Write> AppState<R, W> {
             }
         }
     }
-    fn handle_key(&mut self, key: Key) {
+    fn handle_key<R: Read>(&mut self, key: Key, key_input: &mut termion::input::Keys<R>) {
         let grid_width = self.grid.width();
         let grid_height = self.grid.height();
         match key {
-            Key::Char(':') => if let Some(cmd) = self.ui.input_command(&mut self.key_input) {
+            Key::Char(':') => if let Some(cmd) = self.ui.input_command(key_input) {
                 self.run_command(&cmd);
             }
             Key::Char('.') => if let Some(cmd) = &self.commands.last {
@@ -397,10 +294,10 @@ impl<R: Read, W: Write> AppState<R, W> {
             _ => {}
         }
     }
-    fn check_inputs(&mut self) {
+    fn check_inputs<R: Read>(&mut self, key_input: &mut termion::input::Keys<R>) {
         // Read key presses since the last update.
-        while let Some(key) = self.key_input.next() {
-            self.handle_key(key.unwrap());
+        while let Some(key) = key_input.next() {
+            self.handle_key(key.unwrap(), key_input);
             if self.quit {
                 break;
             }
@@ -409,10 +306,14 @@ impl<R: Read, W: Write> AppState<R, W> {
     fn toggle_pause(&mut self) {
         self.paused = !self.paused;
         self.ui.info1(
-            if self.paused { "Paused." }
-            else { "Unpaused." });
+            if self.paused {
+                "Paused."
+            } else {
+                "Unpaused."
+            }
+        );
     }
-    pub fn run(&mut self) {
+    pub fn run<R: Read>(&mut self, mut key_input: termion::input::Keys<R>) {
         use std::time::Duration;
         let frame_frequency_ms = 16u64;
         let frame_frequency = Duration::from_millis(frame_frequency_ms);
@@ -426,19 +327,17 @@ impl<R: Read, W: Write> AppState<R, W> {
                     time_since_last_cycle -= cycle_frequency;
                 }
             }
-            let (focused, occupied) = Self::get_focused_and_all_locations(
-                self.focus,
-                &self.organisms,
-            );
+            let focused = self.organisms.get_opt(self.focus).map(|ctx| &ctx.organism);
+            let occupied = self.organisms.iter().map(|ctx| ctx.organism.ip).collect();
             self.ui.render_grid(&self.grid, focused, occupied);
             self.ui.render_status_box(
                 self.total_cycles,
                 self.organisms.len(),
                 self.get_selected_byte(),
-                focused.map(|o| &o.organism),
+                focused,
             );
             self.ui.flush();
-            self.check_inputs();
+            self.check_inputs(&mut key_input);
             std::thread::sleep(frame_frequency);
         }
     }

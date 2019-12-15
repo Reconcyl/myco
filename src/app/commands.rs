@@ -1,20 +1,20 @@
-use std::io::{Read, Write};
+use std::io::Write;
 use std::path::PathBuf;
 use std::rc::Rc;
 
+use crate::grid::{ORIGIN, Dir};
 use super::AppState;
 use super::command::{ClosureHandler, CommandHandler, Error};
-use super::grid::{ORIGIN, Dir};
 use super::instruction::Instruction;
 
 /// Convience macro to define a function that returns a CommandHandler
 /// trait object with given behavior.
 macro_rules! define_command {
     ($name:ident($app:ident, $arg:pat $(=> $t:ty)?) $body:block) => {
-        pub(super) fn $name<R: Read, W: Write>() -> Rc<dyn CommandHandler<R, W>> {
+        pub(super) fn $name<W: Write>() -> Rc<dyn CommandHandler<W>> {
             Rc::new(ClosureHandler::new(
-                |$app: &mut AppState<R, W>, $arg $(: $t)?| $body
-            )) as Rc<dyn CommandHandler<R, W>>
+                |$app: &mut AppState<W>, $arg $(: $t)?| $body
+            )) as Rc<dyn CommandHandler<W>>
         }
     }
 }
@@ -161,7 +161,7 @@ define_command!(spawn(app, ()) {
 });
 
 define_command!(dedup(app, ()) {
-    app.dedup_organisms();
+    app.organisms.dedup();
     Ok(())
 });
 
@@ -186,50 +186,55 @@ define_command!(auto_dedup(app, new) {
 
 define_command!(focus(app, idx) {
     if let Some(idx) = idx {
-        if let Some(o) = app.organisms.get(idx) {
-            app.focus = Some(o.id);
-            app.ui.info1(format!("Set focus to organism {}.", idx));
+        if let Some(id) = app.ui.get_listed_id(idx) {
+            if app.organisms.alive(id) {
+                app.focus = Some(id);
+                app.ui.info1(format!("Set focus to organism {}.", idx));
+            } else {
+                app.ui.info1("That organism is not longer alive.");
+            }
+        } else {
+            app.ui.info1("Out of bounds.");
         }
     } else {
+        app.ui.info1("Unset focus.");
         app.focus = None;
     }
     Ok(())
 });
 
 define_command!(view(app, ()) {
-    if let Some(o) = app.get_focused() {
-        app.ui.view_offset = o.organism.ip;
+    if let Some(context) = app.organisms.get_opt(app.focus) {
+        app.ui.view_offset = context.organism.ip;
     }
     Ok(())
 });
 
 define_command!(move_ip(app, (dir, times) => (Dir, Option<u16>)) {
-    if let Some(id) = app.focus {
+    if let Some(context) = app.organisms.get_opt_mut(app.focus) {
         let grid_width = app.grid.width();
         let grid_height = app.grid.height();
-        let o = app.organisms.iter_mut().find(|o| o.id == id).unwrap();
         for _ in 0..times.unwrap_or(1) {
-            o.organism.ip = o.organism.ip.move_in(dir, grid_width, grid_height);
+            context.organism.ip = context.organism.ip.move_in(dir, grid_width, grid_height);
         }
     }
     Ok(())
 });
 
 define_command!(run(app, instructions => Vec<Instruction>) {
-    if let Some(id) = app.focus {
+    if let Some(context) = app.organisms.get_opt_mut(app.focus) {
         let mut tried_to_die = false;
-        let o = app.organisms.iter_mut().find(|o| o.id == id).unwrap();
         let mut new_organisms = Vec::new();
         for ins in instructions {
             use super::organism::Response;
-            match o.organism.run(&mut app.grid, ins) {
+            match context.organism.run(&mut app.grid, ins) {
                 Response::Delay(_) => {}
                 Response::Fork(new) => new_organisms.push(new),
                 Response::Die => tried_to_die = true,
             }
         }
         for o in new_organisms {
-            app.add_organism(o);
+            app.organisms.insert(o);
         }
         app.ui.info1(if tried_to_die { "Use the :kill command instead. "} else { "Executed." });
     }
@@ -238,7 +243,7 @@ define_command!(run(app, instructions => Vec<Instruction>) {
 
 define_command!(kill(app, ()) {
     if let Some(id) = app.focus.take() {
-        app.organisms.retain(|o| o.id != id);
+        app.organisms.remove(id);
     }
     Ok(())
 });

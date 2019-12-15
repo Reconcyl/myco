@@ -1,7 +1,5 @@
 use rand::Rng;
 
-use super::instruction::Instruction;
-
 pub struct Grid<R> {
     width: usize,
     height: usize,
@@ -49,15 +47,17 @@ impl<'a, R: Rng> Grid<R> {
         width: usize,
         height: usize,
         mut rng: R,
+        fill: u8,
         write_error_chance: u32
     ) -> Self {
         assert_ne!(width * height, 0);
         let mut data = Vec::new();
         for _ in 0..width * height {
-            if rng.gen_ratio(1, 1) {
+            if write_error_chance != 0
+              && rng.gen_ratio(1, write_error_chance) {
                 data.push(rng.gen());
             } else {
-                data.push(Instruction::Nop as u8);
+                data.push(fill);
             }
         }
         Self {
@@ -129,7 +129,7 @@ impl Point {
     }
 }
 
-#[derive(Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, PartialEq, Eq, Hash, Debug)]
 pub enum Dir { L, R, U, D }
 
 impl Dir {

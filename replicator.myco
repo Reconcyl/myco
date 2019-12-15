@@ -7,6 +7,7 @@ speed 20
 move v 6
 move > 5
 spawn
+list
 focus 0
 
 # center selection on replicator body and set r = 3, ax = 7
@@ -21,4 +22,6 @@ run #0 #> #> #> #v #v #v r+ r+ r+ +a +a aa aa -a
 | .. .. mc .. .. .. a<
 | .. @@ ?^ )b bm av !<
 
-pause
+speed 1
+set-max 20000
+auto-dedup 10

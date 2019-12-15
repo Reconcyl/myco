@@ -123,10 +123,7 @@ define_command!(pause(app, ()) {
 });
 
 define_command!(move_(app, (dir, times) => (Dir, Option<u16>)) {
-    let times = times.unwrap_or(1);
-    for _ in 0..times {
-        app.ui.move_selection(dir);
-    }
+    app.ui.move_selection_n(dir, times.unwrap_or(1) as usize);
     Ok(())
 });
 
@@ -214,9 +211,8 @@ define_command!(move_ip(app, (dir, times) => (Dir, Option<u16>)) {
     if let Some(context) = app.organisms.get_opt_mut(app.focus) {
         let grid_width = app.grid.width();
         let grid_height = app.grid.height();
-        for _ in 0..times.unwrap_or(1) {
-            context.organism.ip = context.organism.ip.move_in(dir, grid_width, grid_height);
-        }
+        let n = times.unwrap_or(1) as usize;
+        context.organism.ip = context.organism.ip.move_in_n(dir, n, grid_width, grid_height);
     }
     Ok(())
 });

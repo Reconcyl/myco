@@ -263,6 +263,16 @@ impl<W: Write> UI<W> {
         )).unwrap_or(ORIGIN);
         self.select(Some(pos));
     }
+    /// Move the selection `n` spaces in a particular direction and redraw it.
+    pub fn move_selection_n(&mut self, dir: Dir, n: usize) {
+        let pos = self.selection.map(|p| p.move_in_n(
+            dir,
+            n,
+            self.view_width as usize,
+            self.view_height as usize,
+        )).unwrap_or(ORIGIN);
+        self.select(Some(pos));
+    }
     /// Move the view offset in a particular direction. There is no need to redraw it because that
     /// is already done at frequent intervals.
     pub fn move_view_offset(&mut self, dir: Dir, grid_width: usize, grid_height: usize) {

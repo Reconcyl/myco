@@ -104,9 +104,20 @@ impl Point {
         let y = if self.y == 0 { height - 1 } else { self.y - 1 };
         Self { y, ..self }
     }
+    pub fn up_n(self, n: usize, height: usize) -> Self {
+        assert!(self.y < height);
+        let n = n % height;
+        let y = if self.y < n { height + self.y - n } else { self.y - n };
+        Self { y, ..self }
+    }
     pub fn down(self, height: usize) -> Self {
         assert!(self.y < height);
         let y = if self.y == height - 1 { 0 } else { self.y + 1 };
+        Self { y, ..self }
+    }
+    pub fn down_n(self, n: usize, height: usize) -> Self {
+        assert!(self.y < height);
+        let y = (self.y + n) % height;
         Self { y, ..self }
     }
     pub fn left(self, width: usize) -> Self {
@@ -114,9 +125,20 @@ impl Point {
         let x = if self.x == 0 { width - 1 } else { self.x - 1 };
         Self { x, ..self }
     }
+    pub fn left_n(self, n: usize, width: usize) -> Self {
+        assert!(self.x < width);
+        let n = n % width;
+        let x = if self.x < n { width + self.x - n } else { self.x - n };
+        Self { x, ..self }
+    }
     pub fn right(self, width: usize) -> Self {
         assert!(self.x < width);
         let x = if self.x == width - 1 { 0 } else { self.x + 1 };
+        Self { x, ..self }
+    }
+    pub fn right_n(self, n: usize, width: usize) -> Self {
+        assert!(self.x < width);
+        let x = (self.x + n) % width;
         Self { x, ..self }
     }
     pub fn move_in(self, dir: Dir, width: usize, height: usize) -> Self {
@@ -125,6 +147,14 @@ impl Point {
             Dir::R => self.right(width),
             Dir::U => self.up(height),
             Dir::D => self.down(height),
+        }
+    }
+    pub fn move_in_n(self, dir: Dir, n: usize, width: usize, height: usize) -> Self {
+        match dir {
+            Dir::L => self.left_n(n, width),
+            Dir::R => self.right_n(n, width),
+            Dir::U => self.up_n(n, height),
+            Dir::D => self.down_n(n, height),
         }
     }
 }

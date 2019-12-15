@@ -143,9 +143,11 @@ impl OrganismState {
         use Instruction::*;
         macro_rules! return_repeat_move {
             ($register:ident, $dir:ident) => {{
-                for _ in 0..self.$register {
-                    self.cursor = self.cursor.move_in(Dir::$dir, grid.width(), grid.height());
-                }
+                self.cursor = self.cursor.move_in_n(
+                    Dir::$dir,
+                    self.$register as usize,
+                    grid.width(),
+                    grid.height());
                 return Response::Delay(self.$register)
             }}
         }

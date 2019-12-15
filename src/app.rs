@@ -220,7 +220,7 @@ impl<W: Write> AppState<W> {
                 options.grid_height,
                 grid_rng,
                 Instruction::Nop as u8,
-                1
+                options.write_error_chance,
             ),
             config: Config::new(rng_seed),
             commands: Commands::new(),

@@ -23,6 +23,8 @@ struct Options {
     grid_width: usize,
     #[structopt(long="height", name="grid height", default_value="500")]
     grid_height: usize,
+    #[structopt(long="write-error-chance", name="initial write error chance", default_value="1")]
+    write_error_chance: u32,
     #[structopt(long="seed", name="RNG seed")]
     rng_seed: Option<u64>,
     #[structopt(long="profile")]

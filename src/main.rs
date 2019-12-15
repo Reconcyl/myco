@@ -8,8 +8,6 @@ use std::io;
 
 /// Actual app state and rendering logic.
 mod app;
-// / Small valueless LRU cache implementation (may change in the future).
-// mod lru;
 /// Grid and geometric utilities (directions, points, etc.).
 mod grid;
 

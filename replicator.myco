@@ -1,7 +1,8 @@
 # config
 write-error-chance 1000
-set-auto-dedup 10
-speed 20
+set-max 20000
+auto-dedup 10
+speed 1
 
 # create an organism in a visible location
 move v 6
@@ -21,7 +22,3 @@ run #0 #> #> #> #v #v #v r+ r+ r+ +a +a aa aa -a
 | .. .. .. .. !> !> !v
 | .. .. mc .. .. .. a<
 | .. @@ ?^ )b bm av !<
-
-speed 1
-set-max 20000
-auto-dedup 10

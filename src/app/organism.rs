@@ -128,30 +128,32 @@ impl OrganismCollection {
         self.id_map.values()
             .filter_map(move |&idx| self.organisms[idx].as_ref())
     }
-    /// Run a cycle for each organism.
+    /// Run a cycle for each organism, in arbitrary order.
     pub fn run_cycle<R: Rng>(&mut self, grid: &mut Grid<R>, max_organisms: Option<usize>) {
         let mut new = Vec::new();
         let mut suicides = Vec::new();
-        for (&id, &idx) in &self.id_map {
-            let context = self.organisms[idx].as_mut().unwrap();
-            if context.delay_cycles != 0 {
-                context.delay_cycles -= 1;
-                continue;
-            }
-            // Have the organism run the instruction and then handle its response.
-            let ins = Instruction::from_byte(grid[context.organism.ip]);
-            match context.organism.run(grid, ins) {
-                Response::Delay(delay) => {
-                    context.delay_cycles = delay;
-                    context.organism.advance(grid);
+        for context in &mut self.organisms {
+            if let Some(context) = context {
+                let id = context.id;
+                if context.delay_cycles != 0 {
+                    context.delay_cycles -= 1;
+                    continue;
                 }
-                Response::Fork(mut child) => {
-                    context.organism.advance(grid);
-                    child.advance(grid);
-                    new.push(child);
-                }
-                Response::Die => {
-                    suicides.push(id);
+                // Have the organism run the instruction and then handle its response.
+                let ins = Instruction::from_byte(grid[context.organism.ip]);
+                match context.organism.run(grid, ins) {
+                    Response::Delay(delay) => {
+                        context.delay_cycles = delay;
+                        context.organism.advance(grid);
+                    }
+                    Response::Fork(mut child) => {
+                        context.organism.advance(grid);
+                        child.advance(grid);
+                        new.push(child);
+                    }
+                    Response::Die => {
+                        suicides.push(id);
+                    }
                 }
             }
         }

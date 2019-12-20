@@ -1,5 +1,6 @@
 # config
 write-error-chance 1000
+cosmic-ray-rate 1
 set-max 20000
 auto-dedup 10
 speed 1
@@ -17,8 +18,8 @@ run #0 #> #> #> #v #v #v r+ r+ r+ +a +a aa aa -a
 # write the pattern
 | !> cm a> bm (b !v !>
 | !v .. !< .. !v ?< ..
-| .. .. .. .. .. -= mc
-| .. .. .. @@ .. ?> !^
-| .. .. .. .. !> !> !v
+| .. .. ?> @@ .. -= mc
+| .. .. )( @@ .. ?> !^
+| .. .. -= .. !> !> !v
 | .. .. mc .. .. .. a<
 | .. @@ ?^ )b bm av !<

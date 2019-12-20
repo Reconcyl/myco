@@ -180,7 +180,7 @@ impl<W: Write> AppState<W> {
         self.cosmic_rays();
         // If the focused organism is no longer alive, set it to `None`.
         if let Some(id) = self.focus {
-            if self.organisms.alive(id) {
+            if !self.organisms.alive(id) {
                 self.focus = None;
             }
         }

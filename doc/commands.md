@@ -18,9 +18,9 @@ Report the current organism limit.
 
 ### `set-max [MAX]`
 
-Accept an argument limiting the number of organisms. At the moment, if there are too many organisms then reproduction is simply impossible. In the future, organisms that reproduced least recently will be killed to make room for new ones.
+Set a limit on the number of organisms. At the moment, if there are too many organisms then a random one will be killed. In the future, some other heuristic may be used.
 
-If no argument is passed, the limit will be removed.
+If no argument is passed, the limit will be disabled.
 
 ### `speed [SPEED]`
 

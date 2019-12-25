@@ -165,15 +165,15 @@ impl<W> UI<W> {
 
 // Public methods related to UI rendering.
 impl<W: Write> UI<W> {
-    pub fn new(stdout: Option<W>) -> Self {
+    pub fn new(stdout: Option<W>, view_width: u16, view_height: u16) -> Self {
         // TODO: compute view_width, view_height, and info_box_view_height
         // based on the data termion provides about the width and height
         // of the terminal.
         let mut ui = Self {
             stdout,
             selection: None,
-            view_width: 50,
-            view_height: 50,
+            view_width,
+            view_height,
             view_offset: ORIGIN,
             info_box: Vec::new(),
             info_box_view_height: 10,

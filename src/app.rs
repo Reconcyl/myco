@@ -224,7 +224,7 @@ impl<W: Write> AppState<W> {
             ),
             config: Config::new(rng_seed),
             commands: Commands::new(),
-            ui: UI::new(stdout),
+            ui: UI::new(stdout, options.view_width, options.view_height),
             focus: None,
             paused: false,
             quit: false,

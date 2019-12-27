@@ -2,7 +2,6 @@ use rand::Rng;
 use rand::rngs::StdRng;
 
 use std::collections::{HashSet, BTreeMap};
-use std::ops::SubAssign;
 
 mod state;
 
@@ -10,19 +9,6 @@ use crate::grid::{Grid, };
 use super::instruction::Instruction;
 
 pub use state::{Response, OrganismState, get_points_for_selection};
-
-fn dec_option<T: SubAssign + Ord + From<u8>>(opt: &mut Option<T>) -> bool {
-    if let Some(t) = opt {
-        if *t > T::from(0) {
-            *t -= T::from(1);
-            true
-        } else {
-            false
-        }
-    } else {
-        true
-    }
-}
 
 /// A unique identifier for an organism.
 pub type OrganismId = u64;
@@ -32,8 +18,8 @@ type OrganismIdx = usize;
 #[derive(Debug)]
 pub struct OrganismContext {
     id: OrganismId,
-    pub child_potential: Option<u8>,
-    pub life_potential: Option<u8>,
+    pub num_children: usize,
+    pub age: u64,
     pub delay_cycles: u8,
     pub organism: OrganismState,
 }
@@ -50,7 +36,7 @@ pub struct OrganismCollection {
     /// The number of children an organism is permitted to have.
     pub max_children: Option<u8>,
     /// The number of cycles that an organism is permitted to live.
-    pub lifetime: Option<u8>,
+    pub max_age: Option<u16>,
     /// `None` flags a dead organism.
     organisms: Vec<Option<OrganismContext>>,
     /// Mapping from IDs of living all organisms to their indices into the Vec.
@@ -72,8 +58,8 @@ impl OrganismCollection {
     fn create_context(&mut self, state: OrganismState) -> OrganismContext {
         OrganismContext {
             id: self.new_id(),
-            child_potential: self.max_children,
-            life_potential: self.lifetime,
+            num_children: 0,
+            age: 0,
             delay_cycles: 0,
             organism: state
         }
@@ -95,7 +81,7 @@ impl OrganismCollection {
         Self {
             next_id: 0,
             max_children: Some(4),
-            lifetime: Some(100),
+            max_age: Some(100),
             organisms: Vec::new(),
             id_map: BTreeMap::new(),
             kill_rng,
@@ -163,12 +149,15 @@ impl OrganismCollection {
         for context in &mut self.organisms {
             if let Some(context) = context {
                 let id = context.id;
+                context.age += 1;
+                if let Some(max) = self.max_age {
+                    if context.age > max as u64 {
+                        suicides.push(id);
+                        continue;
+                    }
+                }
                 if context.delay_cycles != 0 {
                     context.delay_cycles -= 1;
-                    continue;
-                }
-                if !dec_option(&mut context.life_potential) {
-                    suicides.push(id);
                     continue;
                 }
                 // Have the organism run the instruction and then handle its response.
@@ -180,9 +169,12 @@ impl OrganismCollection {
                     }
                     Response::Fork(mut child) => {
                         context.organism.advance(grid);
-                        if dec_option(&mut context.child_potential) {
-                            child.advance(grid);
-                            new.push(child);
+                        context.num_children += 1;
+                        if let Some(max) = self.max_children {
+                            if context.num_children <= max as usize {
+                                child.advance(grid);
+                                new.push(child);
+                            }
                         }
                     }
                     Response::Die => {

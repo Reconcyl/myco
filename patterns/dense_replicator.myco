@@ -1,0 +1,29 @@
+## A 5x5 replicator. It unconditionally copies itself to the right and also
+## attempts to copy itself downwards. It is also very compact and fast, with
+## almost every cell used, and some used in multiple ways.
+
+# config
+write-error-chance 1000
+cosmic-ray-rate 1
+set-max 20000
+auto-dedup 10
+speed 1
+
+# spawn an organism in a visible location
+move v 6
+move > 5
+spawn
+list
+focus 0
+
+# center selection on replicator body and set r = 2, ax = 5
+run #0 #> #> #v #v r+ r+ +a +a aa +a
+
+# write the pattern
+| !> -= ?v !v !>
+| !/ cm !< cm mc
+| av @@ @@ -= a>
+| !\ bm (b !\ ?^
+| !/ mc ?^ !< @@
+
+pause

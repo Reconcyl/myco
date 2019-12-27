@@ -1,11 +1,14 @@
+## A very simple 7x7 replicator. It attempts to copy itself downwards and to
+## the right (with a check to ensure that it isn't already there).
+
 # config
 write-error-chance 1000
 cosmic-ray-rate 1
 set-max 20000
 auto-dedup 10
-speed 1
+speed 100
 
-# create an organism in a visible location
+# spawn an organism in a visible location
 move v 6
 move > 5
 spawn

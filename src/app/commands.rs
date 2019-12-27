@@ -48,6 +48,25 @@ define_command!(set_max(app, new) {
     Ok(())
 });
 
+define_command!(lifespan(app, ()) {
+    if let Some(lifetime) = app.organisms.lifetime {
+        app.ui.info1(format!("Organisms currently live for {} cycles.", lifetime));
+    } else {
+        app.ui.info1("There is currently no maximum lifetime.");
+    }
+    Ok(())
+});
+
+define_command!(set_lifespan(app, new) {
+    app.organisms.lifetime = new;
+    if let Some(new) = new {
+        app.ui.info1(format!("Organisms can now live for only {} cycles.", new));
+    } else {
+        app.ui.info1("There is now no limit on organism lifetime.");
+    }
+    Ok(())
+});
+
 define_command!(speed(app, new) {
     if let Some(new) = new {
         if new == 0 {

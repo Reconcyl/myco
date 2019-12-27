@@ -86,6 +86,8 @@ impl<W: Write> Commands<W> {
         result.register_aliases(&["l", "list"], commands::list());
         result.register("max", commands::max());
         result.register("set-max", commands::set_max());
+        result.register("lifespan", commands::lifespan());
+        result.register("set-lifespan", commands::set_lifespan());
         result.register("speed", commands::speed());
         result.register("seed", commands::seed());
         result.register("source", commands::source());

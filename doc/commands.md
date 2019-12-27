@@ -22,6 +22,14 @@ Set a limit on the number of organisms. At the moment, if there are too many org
 
 If no argument is passed, the limit will be disabled.
 
+### `lifespan`
+
+Report the maximum number of cycles an organism can live. This is 100 by default.
+
+### `set-lifespan [MAX]`
+
+Limit the lifespan of organisms to `MAX` cycles. If no argument is passed, organisms will be permitted to live for arbitrary amounts of time. Note that this only applies to organisms created after this command is run.
+
 ### `speed [SPEED]`
 
 Accept an argument and set the execution rate to SPEED milliseconds per cycle. If no argument is passed, report the current speed.

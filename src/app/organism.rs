@@ -48,9 +48,9 @@ pub struct OrganismCollection {
     /// The total number of organisms that have been created.
     next_id: OrganismId,
     /// The number of children an organism is permitted to have.
-    max_children: Option<u8>,
+    pub max_children: Option<u8>,
     /// The number of cycles that an organism is permitted to live.
-    lifetime: Option<u8>,
+    pub lifetime: Option<u8>,
     /// `None` flags a dead organism.
     organisms: Vec<Option<OrganismContext>>,
     /// Mapping from IDs of living all organisms to their indices into the Vec.

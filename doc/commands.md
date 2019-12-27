@@ -84,7 +84,7 @@ Set auto-deduplication to run once every `RATE` cycles. If `RATE` is zero, disab
 
 Set focus to the organism whose id is currently `ID`. If no argument is passed, remove focus from any organism.
 
-### `view`
+### `v`, `view`
 
 Scroll the view window such that the focused organism is in the top-left corner.
 

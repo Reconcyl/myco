@@ -32,7 +32,7 @@ Limit the lifespan of organisms to `MAX` cycles. If no argument is passed, organ
 
 ### `speed [SPEED]`
 
-Accept an argument and set the execution rate to SPEED milliseconds per cycle. If no argument is passed, report the current speed.
+Accept an argument and set the execution rate to `SPEED` milliseconds per cycle. If no argument is passed, report the current speed.
 
 ### `seed`
 

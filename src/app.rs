@@ -49,8 +49,6 @@ struct Config {
     cycle_frequency: u32,
     /// The number of cosmic rays per cycle.
     cosmic_ray_rate: u32,
-    /// The maximum number of organisms, if any before reproduction doesn't work.
-    max_organisms: Option<usize>,
     /// How many cycles to wait between dedup passes. If zero, then never
     /// perform dedup passes.
     dedup_rate: usize,
@@ -62,7 +60,6 @@ impl Config {
             rng_seed,
             cycle_frequency: 100,
             cosmic_ray_rate: 0,
-            max_organisms: None,
             dedup_rate: 0,
         }
     }   
@@ -180,7 +177,7 @@ impl<W: Write> AppState<W> {
 impl<W: Write> AppState<W> {
     /// Perform a cycle for all organisms.
     fn cycle(&mut self) {
-        self.organisms.run_cycle(&mut self.grid, self.config.max_organisms);
+        self.organisms.run_cycle(&mut self.grid, self.organisms.max);
         self.cosmic_rays();
         // If the focused organism is no longer alive, set it to `None`.
         if let Some(id) = self.focus {

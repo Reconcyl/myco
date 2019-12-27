@@ -33,6 +33,8 @@ impl OrganismContext {
 pub struct OrganismCollection {
     /// The total number of organisms that have been created.
     next_id: OrganismId,
+    /// The maximum number of organisms, if any, before reproduction doesn't work.
+    pub max: Option<usize>,
     /// The number of children an organism is permitted to have.
     pub max_children: Option<u8>,
     /// The number of cycles that an organism is permitted to live.
@@ -80,6 +82,7 @@ impl OrganismCollection {
     pub fn new(kill_rng: StdRng) -> Self {
         Self {
             next_id: 0,
+            max: None,
             max_children: Some(4),
             max_age: Some(100),
             organisms: Vec::new(),

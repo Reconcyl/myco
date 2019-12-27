@@ -30,7 +30,7 @@ define_command!(list(app, ()) {
 });
 
 define_command!(max(app, ()) {
-    if let Some(old) = app.config.max_organisms {
+    if let Some(old) = app.organisms.max {
         app.ui.info1(format!("The current organism limit is {}.", old));
     } else {
         app.ui.info1("There is currently no organism limit.");
@@ -39,7 +39,7 @@ define_command!(max(app, ()) {
 });
 
 define_command!(set_max(app, new) {
-    app.config.max_organisms = new;
+    app.organisms.max = new;
     if let Some(new) = new {
         app.ui.info1(format!("Organism limit set to {}.", new));
     } else {

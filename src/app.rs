@@ -88,6 +88,8 @@ impl<W: Write> Commands<W> {
         result.register("set-max", commands::set_max());
         result.register("lifespan", commands::lifespan());
         result.register("set-lifespan", commands::set_lifespan());
+        result.register("max-children", commands::max_children());
+        result.register("set-max-children", commands::set_max_children());
         result.register("speed", commands::speed());
         result.register("seed", commands::seed());
         result.register("source", commands::source());

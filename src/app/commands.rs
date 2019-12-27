@@ -67,6 +67,25 @@ define_command!(set_lifespan(app, new) {
     Ok(())
 });
 
+define_command!(max_children(app, ()) {
+    if let Some(max) = app.organisms.max_children {
+        app.ui.info1(format!("Organisms can currently have a maximum of {} children.", max));
+    } else {
+        app.ui.info1("There is currently no limit on the number of children an organism can have.");
+    }
+    Ok(())
+});
+
+define_command!(set_max_children(app, new_max) {
+    app.organisms.max_children = new_max;
+    if let Some(max) = new_max {
+        app.ui.info1(format!("Organisms can now have a maximum of {} children.", max));
+    } else {
+        app.ui.info1("There is now no limit on the number of children an organism can have.");
+    }
+    Ok(())
+});
+
 define_command!(speed(app, new) {
     if let Some(new) = new {
         if new == 0 {

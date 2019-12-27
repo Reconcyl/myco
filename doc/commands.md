@@ -30,6 +30,14 @@ Report the maximum number of cycles an organism can live. This is 100 by default
 
 Limit the lifespan of organisms to `MAX` cycles. If no argument is passed, organisms will be permitted to live for arbitrary amounts of time. Note that this only applies to organisms created after this command is run.
 
+### `max-children`
+
+Report the maximum number of children an organism can have. This is 4 by default. Once this limit has been reached, attempts to create children will fail.
+
+### `set-max-children [MAX]`
+
+Limit organisms to having only `MAX` children. If no argument is passed, organisms will be permitted to have arbitrarily many children. Note that this only applies to organisms created after this command is run.
+
 ### `speed [SPEED]`
 
 Accept an argument and set the execution rate to `SPEED` milliseconds per cycle. If no argument is passed, report the current speed.

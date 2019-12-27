@@ -101,7 +101,7 @@ impl<W: Write> Commands<W> {
         result.register("dedup", commands::dedup());
         result.register("auto-dedup", commands::auto_dedup());
         result.register_aliases(&["f", "focus"], commands::focus());
-        result.register("view", commands::view());
+        result.register_aliases(&["v", "view"], commands::view());
         result.register("ip", commands::move_ip());
         result.register_aliases(&["r", "run"], commands::run());
         result.register("kill", commands::kill());

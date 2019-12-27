@@ -281,7 +281,7 @@ impl<W: Write> UI<W> {
     /// Render the status box data.
     pub fn render_status_box(
         &mut self,
-        total_cycles: usize,
+        total_cycles: u64,
         num_organisms: usize,
         selected_byte: Option<u8>,
         focused_organism: Option<&OrganismState>,

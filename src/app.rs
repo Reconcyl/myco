@@ -123,7 +123,7 @@ impl<W: Write> Commands<W> {
 
 pub struct AppState<W> {
     /// The total number of cycles that have passed.
-    total_cycles: usize,
+    total_cycles: u64,
     /// How many cycles have passed since a dedup occurred.
     cycles_since_dedup: usize,
     /// The RNG used to generate cosmic rays.

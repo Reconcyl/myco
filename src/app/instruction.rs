@@ -113,6 +113,7 @@ gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     CondMoveR     "?>"   Control
     CondMoveU     "?^"   Control
     CondMoveD     "?v"   Control
+    CondHalt      "?@"   Control
     ReflectAll    "!#"   Control
     ReflectX      "!|"   Control
     ReflectY      "!-"   Control

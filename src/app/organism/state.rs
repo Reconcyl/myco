@@ -212,6 +212,7 @@ impl OrganismState {
             CondMoveR => if self.flag { self.dir = Dir::R }
             CondMoveU => if self.flag { self.dir = Dir::U }
             CondMoveD => if self.flag { self.dir = Dir::D }
+            CondHalt => if self.flag { return Response::Die }
             ReflectAll => self.set_dir(self.dir.reverse()),
             ReflectX => self.set_dir(self.dir.reflect_x()),
             ReflectY => self.set_dir(self.dir.reflect_y()),

@@ -67,6 +67,7 @@ The following instructions are supported:
 | `?>` | `if (f) { dir = > }` |
 | `?^` | `if (f) { dir = ^ }` |
 | `?v` | `if (f) { dir = v }` |
+| `?@` | End execution if `f` is true.x3 |
 | `!#` | Rotate `dir` 180 degrees. |
 | `!|` | Rotate `dir` 180 degrees if it is horizontal. |
 | `!-` | Rotate `dir` 180 degrees if it is vertical. |

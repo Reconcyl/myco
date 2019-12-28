@@ -18,7 +18,7 @@ The following instructions are supported:
 | | **Life cycle** |
 | `@@` | End execution. |
 | `..` | Do nothing. |
-| `-=` | Create a new organism with exactly the same IP and state, except that `f` is negated. |
+| `-=` | Create a new organism with exactly the same IP and state, except that the original's `f` is true and the clone's `f` is false. |
 | `m=` | Create a new organism with exactly the same state, except that its IP is set to the same place as its cursor. |
 | | **Data manipulation** |
 | `0a` | `ax = 0` |

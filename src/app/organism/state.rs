@@ -137,18 +137,29 @@ impl OrganismState {
     fn set_dir(&mut self, dir: Dir) {
         self.dir = dir;
     }
+    fn try_set_cursor<R: Rng>(&mut self, new_pos: Point, grid: &Grid<R>) -> bool {
+        let do_set = grid[new_pos] != Instruction::Halt as u8;
+        if do_set {
+            self.cursor = new_pos;
+        }
+        do_set
+    }
     /// Execute the instruction. Return the number of additional cycles to delay
     /// (usually 0). Return `None` if the organism should die.
     pub fn run<R: Rng>(&mut self, grid: &mut Grid<R>, instruction: Instruction) -> Response {
         use Instruction::*;
         macro_rules! return_repeat_move {
             ($register:ident, $dir:ident) => {{
-                self.cursor = self.cursor.move_in_n(
-                    Dir::$dir,
-                    self.$register as usize,
-                    grid.width(),
-                    grid.height());
-                return Response::Delay(self.$register)
+                let width = grid.width();
+                let height = grid.height();
+                let mut i = 0;
+                while i < self.$register {
+                    i += 1;
+                    if !self.try_set_cursor(self.cursor.move_in(Dir::$dir, width, height), grid) {
+                        break;
+                    }
+                }
+                return Response::Delay(i);
             }}
         }
         match instruction {
@@ -230,10 +241,10 @@ impl OrganismState {
             FlagToA => self.ax = self.flag as u8,
             FlagToB => self.bx = self.flag as u8,
 
-            CursorL => self.cursor = self.cursor.left(grid.width()),
-            CursorR => self.cursor = self.cursor.right(grid.width()),
-            CursorU => self.cursor = self.cursor.up(grid.height()),
-            CursorD => self.cursor = self.cursor.down(grid.height()),
+            CursorL => { self.try_set_cursor(self.cursor.left(grid.width()), grid); }
+            CursorR => { self.try_set_cursor(self.cursor.right(grid.width()), grid); }
+            CursorU => { self.try_set_cursor(self.cursor.up(grid.height()), grid); }
+            CursorD => { self.try_set_cursor(self.cursor.down(grid.height()), grid); }
             CursorLTimesA => return_repeat_move!(ax, L),
             CursorRTimesA => return_repeat_move!(ax, R),
             CursorUTimesA => return_repeat_move!(ax, U),
@@ -242,7 +253,7 @@ impl OrganismState {
             CursorRTimesB => return_repeat_move!(bx, R),
             CursorUTimesB => return_repeat_move!(bx, U),
             CursorDTimesB => return_repeat_move!(bx, D),
-            CursorHome => self.cursor = self.ip,
+            CursorHome => { self.try_set_cursor(self.ip, grid); }
 
             RadiusA => self.set_r(self.ax),
             RadiusB => self.set_r(self.bx),

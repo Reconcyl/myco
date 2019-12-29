@@ -159,7 +159,6 @@ gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     CursorToB    "bm"  Selection
     Copy         "cm"  Selection
     Paste        "mc"  Selection
-    Swap         "c:"  Selection
 
     Pointer0        "]0"  Memory
     PointerA        "]a"  Memory

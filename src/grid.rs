@@ -1,5 +1,31 @@
 use rand::Rng;
 
+/// Sort a pair of values.
+fn min_max<T: Ord>(a: T, b: T) -> (T, T) {
+    if a > b {
+        (b, a)
+    } else {
+        (a, b)
+    }
+}
+
+/// Return the minimum number of increments or decrements (modulo a given base)
+/// required to turn one number into another.
+fn dist_modular(a: usize, b: usize, rem: usize) -> usize {
+    let (min, max) = min_max(a, b);
+    std::cmp::min(max - min, min + rem - max)
+}
+
+/// Return the minimum number of decrements (modulo a given base) required to turn
+/// one number into another.
+fn sub_modular(a: usize, b: usize, rem: usize) -> usize {
+    if b > a {
+        rem + a - b
+    } else {
+        a - b
+    }
+}
+
 pub struct Grid<R> {
     width: usize,
     height: usize,
@@ -155,6 +181,19 @@ impl Point {
             Dir::R => self.right_n(n, width),
             Dir::U => self.up_n(n, height),
             Dir::D => self.down_n(n, height),
+        }
+    }
+    /// Modular taxicab distance.
+    pub fn dist_to(self, other: Point, width: usize, height: usize) -> usize {
+        std::cmp::max(
+            dist_modular(self.x, other.x, width),
+            dist_modular(self.y, other.y, height))
+    }
+    /// Modular componentwise subtraction.
+    pub fn sub(self, other: Point, width: usize, height: usize) -> Self {
+        Self {
+            x: sub_modular(self.x, other.x, width),
+            y: sub_modular(self.y, other.y, height),
         }
     }
 }

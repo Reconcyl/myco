@@ -144,6 +144,36 @@ impl OrganismState {
         }
         do_set
     }
+    fn paste<R: Rng>(&mut self, grid: &mut Grid<R>) -> u8 {
+        let r = selection_radius(&self.clipboard);
+        let width = r * 2 + 1;
+        let low_corner = self.cursor
+            .left_n(r as usize, grid.width())
+            .up_n(r as usize, grid.height());
+        // Fill in the region using a flood fill to select relevant points.
+        let mut frontier = vec![self.cursor];
+        let mut modified = Vec::new();
+        while let Some(p) = frontier.pop() {
+            if modified.contains(&p) {
+                continue;
+            }
+            if p.dist_to(self.cursor, grid.width(), grid.height()) > r as usize {
+                continue;
+            }
+            modified.push(p);
+            if grid[p] == Instruction::Wall as u8 {
+                continue;
+            }
+            let relative_pos = p.sub(low_corner, grid.width(), grid.height());
+            let idx = relative_pos.y * (width as usize) + relative_pos.x;
+            grid.set(p, self.clipboard[idx]);
+            frontier.push(p.up(grid.height()));
+            frontier.push(p.down(grid.height()));
+            frontier.push(p.left(grid.width()));
+            frontier.push(p.right(grid.width()));
+        }
+        width
+    }
     /// Execute the instruction. Return the number of additional cycles to delay
     /// (usually 0). Return `None` if the organism should die.
     pub fn run<R: Rng>(&mut self, grid: &mut Grid<R>, instruction: Instruction) -> Response {
@@ -268,24 +298,8 @@ impl OrganismState {
             CursorToB => self.bx = grid[self.cursor],
             Copy => self.clipboard = get_points_for_selection(self.cursor, self.r, grid)
                 .map(|p| grid[p]).collect(),
-            Paste => {
-                let r = selection_radius(&self.clipboard);
-                for (point, &new) in get_points_for_selection(self.cursor, r, grid).zip(&self.clipboard) {
-                    grid.set(point, new);
-                }
-                return Response::Delay(2 * r + 1);
-            }
-            Swap => {
-                self.r = selection_radius(&self.clipboard);
-                let points = get_points_for_selection(self.cursor, self.r, grid);
-                for (point, clip_value) in points.zip(&mut self.clipboard) {
-                    let temp = *clip_value;
-                    *clip_value = grid[point];
-                    grid.set(point, temp);
-                }
-                return Response::Delay(2 * self.r + 1);
-            }
-
+            Paste => return Response::Delay(self.paste(grid)),
+            
             Pointer0 => self.mp = 0,
             PointerA => self.mp = self.ax as usize,
             PointerB => self.mp = self.bx as usize,

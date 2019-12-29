@@ -64,6 +64,7 @@ macro_rules! gen_variant {
 gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     Halt        "@@"  Special
     Nop         ".."  Special
+    Wall        "##"  Special
     FlagFork    "-="  Special
     CursorFork  "m="  Special
 

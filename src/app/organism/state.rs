@@ -138,7 +138,7 @@ impl OrganismState {
         self.dir = dir;
     }
     fn try_set_cursor<R: Rng>(&mut self, new_pos: Point, grid: &Grid<R>) -> bool {
-        let do_set = grid[new_pos] != Instruction::Halt as u8;
+        let do_set = grid[new_pos] != Instruction::Wall as u8;
         if do_set {
             self.cursor = new_pos;
         }
@@ -164,7 +164,7 @@ impl OrganismState {
         }
         match instruction {
             Halt => return Response::Die,
-            Nop => {}
+            Nop | Wall => {}
             FlagFork => {
                 let mut new = self.clone();
                 new.flag = true;

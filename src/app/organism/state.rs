@@ -193,8 +193,8 @@ impl OrganismState {
             }}
         }
         match instruction {
-            Halt => return Response::Die,
-            Nop | Wall => {}
+            Halt | Wall => return Response::Die,
+            Nop => {}
             FlagFork => {
                 let mut new = self.clone();
                 new.flag = true;

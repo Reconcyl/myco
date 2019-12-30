@@ -69,7 +69,7 @@ gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     FlagFork    "-="  Special
     CursorFork  "m="  Special
 
-    Wall "##"  Wall
+    Wall  "##"  Wall
 
     ZeroA     "0a"  Calculation
     ZeroB     "0b"  Calculation

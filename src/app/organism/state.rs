@@ -165,7 +165,7 @@ impl OrganismState {
                 continue;
             }
             let relative_pos = p.sub(low_corner, grid.width(), grid.height());
-            let idx = relative_pos.y * (width as usize) + relative_pos.x;
+            let idx = relative_pos.x * (width as usize) + relative_pos.y;
             grid.set(p, self.clipboard[idx]);
             frontier.push(p.up(grid.height()));
             frontier.push(p.down(grid.height()));

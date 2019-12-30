@@ -3,6 +3,7 @@ use super::ui::Color;
 #[derive(Clone, Copy)]
 pub enum Category {
     Special,
+    Wall,
     Calculation,
     Control,
     Cursor,
@@ -14,6 +15,7 @@ impl Category {
     pub fn color(self) -> Color {
         match self {
             Self::Special     => Color::Gray,
+            Self::Wall        => Color::LightGray,
             Self::Calculation => Color::LightGreen,
             Self::Control     => Color::LightMagenta,
             Self::Cursor      => Color::LightCyan,
@@ -64,9 +66,10 @@ macro_rules! gen_variant {
 gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     Halt        "@@"  Special
     Nop         ".."  Special
-    Wall        "##"  Special
     FlagFork    "-="  Special
     CursorFork  "m="  Special
+
+    Wall "##"  Wall
 
     ZeroA     "0a"  Calculation
     ZeroB     "0b"  Calculation

@@ -112,7 +112,6 @@ The following instructions are supported:
 | `bm` | Set `bx` to the byte at the cursor. |
 | `cm` | Copy the selection to the clipboard. |
 | `mc` | Paste the clipboard at the cursor. |
-| `c:` | Set `r` to the radius of the clipboard, then swap the contents of the clipboard and the selection. |
 | | **Memory array** |
 | `]0` | `i = 0` |
 | `]a` | `i = ax` |

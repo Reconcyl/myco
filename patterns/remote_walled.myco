@@ -1,0 +1,36 @@
+## A 9x9 walled replicator that duplicates itself remotely via `m=`.
+
+# config
+write-error-chance 1000
+cosmic-ray-rate 1
+set-max 2000
+
+# move to a visible location
+move v
+move > 5
+move v 5
+
+# write the replicator body
+| ## ## ## ## ## ## ## ## ##
+| ## !v !< .. !v mc ?v !< ##
+| ## bm av .. !> m= !v (b ##
+| ## (b !^ #v #0 .. !< bm ##
+| ## ?< .. .. !> cm a> !^ @@
+| ## mc .. .. .. .. .. .. ##
+| ## m= .. .. .a .. .. .. ##
+| ## .. .. .. !^ .. .. .. ##
+| ## ## ## ## @@ ## ## ## ##
+
+# create an organism in the center
+move ^ 5
+move > 4
+spawn
+
+list
+focus 0
+
+# set r = 4, ax = 9
+run r+ r+ r+ r+
+run +a +a +a +a +a +a +a +a +a
+
+pause

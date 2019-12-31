@@ -162,7 +162,9 @@ impl OrganismState {
             }
             modified.push(p);
             if grid[p] == Instruction::Wall as u8 {
-                continue;
+                if !grid.pierce_wall() {
+                    continue;
+                }
             }
             let relative_pos = p.sub(low_corner, grid.width(), grid.height());
             let idx = relative_pos.x * (width as usize) + relative_pos.y;

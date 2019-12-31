@@ -91,6 +91,7 @@ impl<W: Write> Commands<W> {
         result.register("seed", commands::seed());
         result.register("source", commands::source());
         result.register("write-error-chance", commands::write_error_chance());
+        result.register("wall-pierce-chance", commands::wall_pierce_chance());
         result.register("cosmic-ray-rate", commands::cosmic_ray_rate());
         result.register_aliases(&["c", "cycle"], commands::cycle());
         result.register_aliases(&["p", "pause"], commands::pause());

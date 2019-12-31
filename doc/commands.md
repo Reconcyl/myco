@@ -54,6 +54,10 @@ Run the commands given by the lines of `FILE`. Blank commands and commands start
 
 Set the chance of a write error to 1 in `CHANCE`. If `CHANCE` is zero, then remove the possibility of write errors altogether. If no argument is passed, report the current chance of a write error.
 
+### `wall-pierce-chance [CHANCE]`
+
+Set the chance that a given write will pierce a wall to 1 in `CHANCE`. If `CHANCE` is zero, then remove the possibility of piercing walls entirely. If no argument is passed, report the current chance of a wall being pierced.
+
 ### `cosmic-ray-rate [RATE]`
 
 Set the frequency of cosmic rays to be `RATE` times per cycle. If no argument is passed, report the current frequency.

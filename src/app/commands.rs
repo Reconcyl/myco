@@ -132,6 +132,25 @@ define_command!(write_error_chance(app, new_chance) {
     Ok(())
 });
 
+define_command!(wall_pierce_chance(app, new_chance) {
+    if let Some(chance) = new_chance {
+        app.grid.wall_pierce_chance = chance;
+        if chance == 0 {
+            app.ui.info1("Set the chance of piercing a wall to 0.");
+        } else {
+            app.ui.info1(format!("Set the chance of piercing a wall to 1/{}.", chance))
+        }
+    } else {
+        let chance = app.grid.wall_pierce_chance;
+        if chance == 0 {
+            app.ui.info1("The current chance of piercing a wall is 0.");
+        } else {
+            app.ui.info1(format!("The current chance of piercing a wall is 1/{}.", chance))
+        };
+    }
+    Ok(())
+});
+
 define_command!(cosmic_ray_rate(app, new) {
     if let Some(rate) = new {
         app.config.cosmic_ray_rate = rate;

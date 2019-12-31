@@ -35,6 +35,9 @@ pub struct Grid<R> {
     /// The inverse probability of a cosmic ray occuring on a given cycle.
     /// This is set to 0 if the probability is 0.
     pub write_error_chance: u32,
+    /// The inverse probability that an attempt to write to a wall will succeed.
+    /// This is set to 0 if the probability is 0.
+    pub wall_pierce_chance: u32,
 }
 
 impl<R> Grid<R> {
@@ -91,7 +94,12 @@ impl<'a, R: Rng> Grid<R> {
             data,
             rng,
             write_error_chance,
+            wall_pierce_chance: 0,
         }
+    }
+    pub fn pierce_wall(&mut self) -> bool {
+        self.wall_pierce_chance != 0
+            && self.rng.gen_ratio(1, self.wall_pierce_chance)
     }
     pub fn set(&mut self, p: Point, new: u8) {
         if p.x < self.width && p.y < self.height {

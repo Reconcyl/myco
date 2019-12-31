@@ -3,6 +3,7 @@
 
 # config
 write-error-chance 1000
+wall-pierce-chance 100
 cosmic-ray-rate 1
 set-max 20000
 auto-dedup 10

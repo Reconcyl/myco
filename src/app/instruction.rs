@@ -23,6 +23,17 @@ impl Category {
             Self::Memory      => Color::LightBlue,
         }
     }
+    pub fn color_rgb(self) -> [u8; 3] {
+        match self {
+            Self::Special     => [0x30, 0x30, 0x30],
+            Self::Wall        => [0x8a, 0x8a, 0x8a],
+            Self::Calculation => [0x8e, 0xcd, 0x00],
+            Self::Control     => [0xc4, 0x6a, 0xe1],
+            Self::Cursor      => [0x00, 0xd4, 0xd9],
+            Self::Selection   => [0xe1, 0x00, 0x03],
+            Self::Memory      => [0x74, 0xa4, 0xdc],
+        }
+    }
 }
 
 macro_rules! gen_variant {
@@ -50,6 +61,7 @@ macro_rules! gen_variant {
         static $symbol_array_name: &[&str] = &[$($symbol,)*];
         impl std::fmt::Display for $enum_name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                
                 write!(f, "{}", match self {
                     $(Self::$variant => $symbol,)*
                 })?;

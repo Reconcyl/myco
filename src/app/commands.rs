@@ -113,6 +113,19 @@ define_command!(source(app, path => PathBuf) {
     Ok(())
 });
 
+define_command!(export(app, (path, pixel_scale) => (PathBuf, Option<u8>)) {
+    let pixel_scale = pixel_scale.unwrap_or(1);
+    if pixel_scale == 0 {
+        Err(Error::ZeroPixelScale)
+    } else {
+        let result = app.write_image_data(path, pixel_scale);
+        if result.is_ok() {
+            app.ui.info1("Exported.");
+        }
+        result
+    }
+});
+
 define_command!(write_error_chance(app, new_chance) {
     if let Some(chance) = new_chance {
         app.grid.write_error_chance = chance;

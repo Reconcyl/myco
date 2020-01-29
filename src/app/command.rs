@@ -20,6 +20,9 @@ pub enum Error {
     BadNumber,
     ZeroSpeed,
     NoPath,
+    ZeroPixelScale,
+    ExportFileExists(PathBuf),
+    ExportFailure(PathBuf),
     Extra(String),
 }
 
@@ -34,6 +37,11 @@ impl Error {
             Error::BadNumber => "Invalid number.".into(),
             Error::ZeroSpeed => "Speed cannot be set to 0.".into(),
             Error::NoPath => "Expected filepath.".into(),
+            Error::ZeroPixelScale => "Pixel scale must be nonzero.".into(),
+            Error::ExportFileExists(p) =>
+                format!("The file '{}' already exists.", p.display()).into(),
+            Error::ExportFailure(p) =>
+                format!("Couldn't write image to file '{}'.", p.display()).into(),
             Error::Extra(s) => format!("Unexpected argument '{}'.", s).into(),
         }
     }

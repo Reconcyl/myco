@@ -45,8 +45,8 @@ The following instructions are supported:
 | `b%` | `bx = bx % 2` |
 | `a&` | `ax = ax & bx` |
 | `b&` | `bx = ax & bx` |
-| `a|` | `ax = ax | bx` |
-| `b|` | `bx = ax | bx` |
+| `a\|` | `ax = ax | bx` |
+| `b\|` | `bx = ax | bx` |
 | `a#` | `ax = ax ^ bx` |
 | `b#` | `bx = ax ^ bx` |
 | `a=` | `ax = (ax == bx)` |
@@ -70,7 +70,7 @@ The following instructions are supported:
 | `?v` | `if (f) { dir = v }` |
 | `?@` | End execution if `f` is true.x3 |
 | `!#` | Rotate `dir` 180 degrees. |
-| `!|` | Rotate `dir` 180 degrees if it is horizontal. |
+| `!\|` | Rotate `dir` 180 degrees if it is horizontal. |
 | `!-` | Rotate `dir` 180 degrees if it is vertical. |
 | `!/` | Rotate `dir`, mapping `>` to `^` and vice versa, and mapping `<` to `v` and vice versa. |
 | `!\\` | Rotate `dir`, mapping `<` to `^` and vice versa, and mapping `>` to `v` and vice versa. |

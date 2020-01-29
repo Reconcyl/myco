@@ -50,6 +50,10 @@ Report the RNG seed. If this was not passed by the command line, it will be rand
 
 Run the commands given by the lines of `FILE`. Blank commands and commands starting with `#` are ignored.
 
+### `export FILE [SCALE]`
+
+Create a visualization of the entire world state as a PNG file, representing each instruction with a `SCALE`-by-`SCALE` square of pixels. If `SCALE` is not passed, it defaults to 1.
+
 ### `write-error-chance [CHANCE]`
 
 Set the chance of a write error to 1 in `CHANCE`. If `CHANCE` is zero, then remove the possibility of write errors altogether. If no argument is passed, report the current chance of a write error.

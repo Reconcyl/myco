@@ -319,6 +319,9 @@ impl<W: Write> AppState<W> {
             }
         );
     }
+    pub fn num_organisms(&self) -> usize {
+        self.organisms.len()
+    }
     pub fn run<R: Read>(&mut self, mut key_input: termion::input::Keys<R>) {
         use std::time::Duration;
         let frame_frequency_ms = 16u64;

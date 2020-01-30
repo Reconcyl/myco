@@ -61,7 +61,6 @@ macro_rules! gen_variant {
         static $symbol_array_name: &[&str] = &[$($symbol,)*];
         impl std::fmt::Display for $enum_name {
             fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                
                 write!(f, "{}", match self {
                     $(Self::$variant => $symbol,)*
                 })?;

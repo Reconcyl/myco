@@ -54,6 +54,11 @@ fn main() {
     match app::AppState::init(options, stdout) {
         Ok(mut app) => if !ignore_io {
             app.run(termion::async_stdin().keys())
+        } else {
+            let num_organisms = app.num_organisms();
+            eprintln!("Ended with {} organism{}.",
+                num_organisms,
+                if num_organisms == 1 { "" } else { "s" });
         },
         Err(e) => eprintln!("{}", e.description()),
     }

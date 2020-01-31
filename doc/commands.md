@@ -50,9 +50,13 @@ Report the RNG seed. If this was not passed by the command line, it will be rand
 
 Run the commands given by the lines of `FILE`. Blank commands and commands starting with `#` are ignored.
 
-### `export FILE [SCALE]`
+### `export FILE`
 
-Create a visualization of the entire world state as a PNG file, representing each instruction with a `SCALE`-by-`SCALE` square of pixels. If `SCALE` is not passed, it defaults to 1.
+Create a visualization of the entire world state as a PNG file, writing it to `FILE`.
+
+### `export-gif FILE [FRAMES] [STEP]`
+
+Create a GIF by repeatedly sampling the world state every `STEP` cycles. Generate a total of `FRAMES` frames and write the result to `FILE`. If `STEP` is not passed, it defaults to 4. If `FRAMES` is not passed, it defaults to 100.
 
 ### `write-error-chance [CHANCE]`
 

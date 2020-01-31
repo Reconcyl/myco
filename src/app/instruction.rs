@@ -1,6 +1,7 @@
 use super::ui::Color;
 
 #[derive(Clone, Copy)]
+#[repr(u8)]
 pub enum Category {
     Special,
     Wall,
@@ -34,6 +35,15 @@ impl Category {
             Self::Memory      => [0x74, 0xa4, 0xdc],
         }
     }
+    pub const PALETTE: [u8; 3 * 7] = [
+        0x30, 0x30, 0x30,
+        0x8a, 0x8a, 0x8a,
+        0x8e, 0xcd, 0x00,
+        0xc4, 0x6a, 0xe1,
+        0x00, 0xd4, 0xd9,
+        0xe1, 0x00, 0x03,
+        0x74, 0xa4, 0xdc,
+    ];
 }
 
 macro_rules! gen_variant {

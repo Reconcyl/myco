@@ -113,12 +113,24 @@ define_command!(source(app, path => PathBuf) {
     Ok(())
 });
 
-define_command!(export(app, (path, pixel_scale) => (PathBuf, Option<u8>)) {
-    let pixel_scale = pixel_scale.unwrap_or(1);
-    if pixel_scale == 0 {
-        Err(Error::ZeroPixelScale)
+define_command!(export(app, path) {
+    let result = app.write_image_data(path);
+    if result.is_ok() {
+        app.ui.info1("Exported.");
+    }
+    result
+});
+
+define_command!(export_gif(app, (path, settings) => (PathBuf, Option<(u16, Option<u16>)>)) {
+    let (num_frames, step) = settings.unwrap_or((100, None));
+    let step = step.unwrap_or(4);
+    if num_frames == 0 {
+        Err(Error::ZeroGifFrames)
+    } else if step == 0 {
+        Err(Error::ZeroStep)
     } else {
-        let result = app.write_image_data(path, pixel_scale);
+        app.ui.info1("Exporting...");
+        let result = app.write_gif_data(path, num_frames as usize, step as usize);
         if result.is_ok() {
             app.ui.info1("Exported.");
         }

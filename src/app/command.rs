@@ -20,7 +20,9 @@ pub enum Error {
     BadNumber,
     ZeroSpeed,
     NoPath,
-    ZeroPixelScale,
+    WorldTooBig,
+    ZeroGifFrames,
+    ZeroStep,
     ExportFileExists(PathBuf),
     ExportFailure(PathBuf),
     Extra(String),
@@ -37,11 +39,13 @@ impl Error {
             Error::BadNumber => "Invalid number.".into(),
             Error::ZeroSpeed => "Speed cannot be set to 0.".into(),
             Error::NoPath => "Expected filepath.".into(),
-            Error::ZeroPixelScale => "Pixel scale must be nonzero.".into(),
+            Error::WorldTooBig => "The world is too big to export as a GIF.".into(),
+            Error::ZeroGifFrames => "Cannot create GIF with zero frames.".into(),
+            Error::ZeroStep => "Cannot create GIF with zero cycles between frames.".into(),
             Error::ExportFileExists(p) =>
                 format!("The file '{}' already exists.", p.display()).into(),
             Error::ExportFailure(p) =>
-                format!("Couldn't write image to file '{}'.", p.display()).into(),
+                format!("Couldn't export to file '{}'.", p.display()).into(),
             Error::Extra(s) => format!("Unexpected argument '{}'.", s).into(),
         }
     }

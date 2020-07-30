@@ -96,7 +96,7 @@ Like `write`, but accept argument as a byte value instead of an instruction symb
 
 ### `spawn`
 
-Create a new organism at the cursor moving rightwards. The initial organism has `ax = bx = flag = r = 0`. The memory array is entirely zero and the pointer points to the first element of it.
+Create a new organism at the cursor moving rightwards. The initial organism has `ax = bx = flag = r = 0`.
 
 ### `dedup`
 

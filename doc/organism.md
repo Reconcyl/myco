@@ -7,7 +7,6 @@ Each organism has access to the following state:
 - A cursor pointing somewhere on the grid.
 - A selection radius (`r`) ranging from 0 to 10. Attempting to set `r` to a value out of this range will have no effect.
 - A clipboard, which is a square of bytes with odd side length between 1 and 21.
-- A memory array of bytes (`data[i]`) and a nonzero index into it (`i`).
 
 Arithmetic involving byte values always wraps.
 
@@ -112,26 +111,3 @@ The following instructions are supported:
 | `bm` | Set `bx` to the byte at the cursor. |
 | `cm` | Copy the selection to the clipboard. |
 | `mc` | Paste the clipboard at the cursor. |
-| | **Memory array** |
-| `]0` | `i = 0` |
-| `]a` | `i = ax` |
-| `]b` | `i = bx` |
-| `a]` | `ax = i` (wrapping `i` to fit) |
-| `b]` | `bx = i` (wrapping `i` to fit) |
-| `]<` | `i = max(i - 1, 0)` |
-| `]>` | `i = i + 1` |
-| `}A` | `i = max(i - ax, 0)` |
-| `}a` | `i = i + ax` |
-| `}B` | `i = max(i - bx, 0)` |
-| `}b` | `i = i + bx` |
-| `[0` | `data[i] = 0` |
-| `[a` | `data[i] = ax` |
-| `[b` | `data[i] = bx` |
-| `a[` | `ax = data[i]` |
-| `b[` | `bx = data[i]` |
-| `[+` | `data[i] = data[i] + 1` |
-| `[-` | `data[i] = data[i] - 1` |
-| `{a` | `data[i] = data[i] + ax` |
-| `{A` | `data[i] = data[i] - ax` |
-| `{b` | `data[i] = data[i] + bx` |
-| `{B` | `data[i] = data[i] - bx` |

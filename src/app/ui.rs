@@ -315,34 +315,10 @@ impl<W: Write> UI<W> {
         }
         if let Some(o) = focused_organism {
             let OrganismState { dir, ax, bx, flag, .. } = o;
-            let (first_row, column, bytes) = o.local_memory();
             write_line!("dir      {}", dir.to_char());
             write_line!("ax     {:3}", ax);
             write_line!("bx     {:3}", bx);
             write_line!("flag     {}", if *flag { 't' } else { 'f' });
-            if first_row {
-                write_line!();
-            } else {
-                write_line!(" ...");
-            }
-            for row in 0..3 {
-                let offset = row*3;
-                write_line!("{:02x} {:02x} {:02x} {:02x}",
-                    bytes[offset],
-                    bytes[offset+1],
-                    bytes[offset+2],
-                    bytes[offset+3]
-                );
-                if row == (!first_row as usize) {
-                    let term_y = term_y + status_lines - 1;
-                    let term_x = term_x + column as u16 * 3;
-                    self.go_to(term_x,     term_y);
-                    print!(self, '[');
-                    self.go_to(term_x + 3, term_y);
-                    print!(self, ']');
-                }
-            }
-            write_line!(" ...");
         }
         self.status_box_height = status_lines;
     }

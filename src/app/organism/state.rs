@@ -67,10 +67,6 @@ pub struct OrganismState {
     pub ax: u8,
     /// General-purpose register BX
     pub bx: u8,
-    /// Storage array data.
-    storage: Vec<u8>,
-    /// Memory pointer.
-    mp: usize,
 }
 
 impl std::fmt::Display for OrganismState {
@@ -96,25 +92,7 @@ impl OrganismState {
             flag: false,
             ax: 0,
             bx: 0,
-            storage: Vec::new(),
-            mp: 0,
         }
-    }
-    // Return the following information:
-    // - mp < 4
-    // - mp % 4
-    // - the three rows of storage surrounding mp
-    pub fn local_memory(&self) -> (bool, u8, [u8; 12]) {
-        let first_row = self.mp < 4;
-        let column = self.mp % 4;
-        let byte_start = if first_row { 0 } else { self.mp - column - 4 };
-        let mut bytes = [0; 12];
-        for i in 0..12 {
-            if let Some(&byte) = self.storage.get(byte_start + i) {
-                bytes[i] = byte;
-            }
-        }
-        (first_row, column as u8, bytes)
     }
     pub fn advance<R>(&mut self, grid: &Grid<R>) {
         self.ip = self.ip.move_in(self.dir, grid.width(), grid.height());
@@ -124,15 +102,6 @@ impl OrganismState {
         if (0..=10).contains(&new) {
             self.r = new;
         }
-    }
-    fn get_stored(&mut self) -> u8 {
-        self.storage.get(self.mp).copied().unwrap_or(0)
-    }
-    fn get_stored_mut(&mut self) -> &mut u8 {
-        while self.storage.len() <= self.mp {
-            self.storage.push(0);
-        }
-        &mut self.storage[self.mp]
     }
     fn set_dir(&mut self, dir: Dir) {
         self.dir = dir;
@@ -301,51 +270,6 @@ impl OrganismState {
             Copy => self.clipboard = get_points_for_selection(self.cursor, self.r, grid)
                 .map(|p| grid[p]).collect(),
             Paste => return Response::Delay(self.paste(grid)),
-            
-            Pointer0 => self.mp = 0,
-            PointerA => self.mp = self.ax as usize,
-            PointerB => self.mp = self.bx as usize,
-            PointerToA => self.ax = self.mp as u8,
-            PointerToB => self.bx = self.mp as u8,
-            PointerL => self.mp = self.mp.saturating_sub(1),
-            PointerR => self.mp += 1,
-            PointerLTimesA => self.mp = self.mp.saturating_sub(self.ax as usize),
-            PointerRTimesA => self.mp += self.ax as usize,
-            PointerLTimesB => self.mp = self.mp.saturating_sub(self.bx as usize),
-            PointerRTimesB => self.mp += self.bx as usize,
-            Pointee0 => *self.get_stored_mut() = 0,
-            PointeeA => *self.get_stored_mut() = self.ax,
-            PointeeB => *self.get_stored_mut() = self.bx,
-            PointeeToA => self.ax = self.get_stored(),
-            PointeeToB => self.bx = self.get_stored(),
-            IncPointee => {
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_add(1);
-            }
-            DecPointee => {
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_sub(1);
-            }
-            IncPointeeA => {
-                let ax = self.ax;
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_add(ax);
-            }
-            DecPointeeA => {
-                let ax = self.ax;
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_sub(ax);
-            }
-            IncPointeeB => {
-                let bx = self.bx;
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_add(bx);
-            }
-            DecPointeeB => {
-                let bx = self.bx;
-                let stored = self.get_stored_mut();
-                *stored = stored.wrapping_sub(bx);
-            }
         }
         Response::Delay(0)
     }

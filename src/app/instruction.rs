@@ -183,29 +183,6 @@ gen_variant! { Instruction (const INSTRUCTIONS, const INSTRUCTION_SYMBOLS)
     CursorToB    "bm"  Selection
     Copy         "cm"  Selection
     Paste        "mc"  Selection
-
-    Pointer0        "]0"  Memory
-    PointerA        "]a"  Memory
-    PointerB        "]b"  Memory
-    PointerToA      "a]"  Memory
-    PointerToB      "b]"  Memory
-    PointerL        "]<"  Memory
-    PointerR        "]>"  Memory
-    PointerLTimesA  "}A"  Memory
-    PointerRTimesA  "}a"  Memory
-    PointerLTimesB  "}B"  Memory
-    PointerRTimesB  "}b"  Memory
-    Pointee0        "[0"  Memory
-    PointeeA        "[a"  Memory
-    PointeeB        "[b"  Memory
-    PointeeToA      "a["  Memory
-    PointeeToB      "b["  Memory
-    IncPointee      "[+"  Memory
-    DecPointee      "[-"  Memory
-    IncPointeeA     "{a"  Memory
-    DecPointeeA     "{A"  Memory
-    IncPointeeB     "{b"  Memory
-    DecPointeeB     "{B"  Memory
 }
 
 impl Instruction {
